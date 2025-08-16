@@ -16,6 +16,17 @@ export const metadata: Metadata = {
   creator: "Ascend Skills",
   publisher: "Ascend Skills",
   robots: "index, follow",
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/aslogo.png', type: 'image/png', sizes: '32x32' },
+      { url: '/aslogo.svg', type: 'image/svg+xml' }
+    ],
+    apple: [
+      { url: '/aslogo.png', sizes: '180x180', type: 'image/png' }
+    ],
+    shortcut: '/favicon.ico'
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
