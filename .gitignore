@@ -1,7 +1,9 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
-/node_modules
+# ========================================
+# DEPENDENCIES
+# ========================================
+node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -10,32 +12,170 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
+# ========================================
+# TESTING
+# ========================================
 /coverage
+*.lcov
+.nyc_output
 
-# next.js
+# ========================================
+# NEXT.JS FRONTEND
+# ========================================
 /.next/
 /out/
-
-# production
 /build
+.next/
+out/
+build/
 
-# misc
-.DS_Store
-*.pem
+# ========================================
+# PRODUCTION
+# ========================================
+/build
+/dist
 
-# debug
+# ========================================
+# ENVIRONMENT VARIABLES
+# ========================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env*.local
+
+# ========================================
+# BACKEND SPECIFIC
+# ========================================
+BackEnd/logs/
+BackEnd/uploads/
+BackEnd/temp/
+BackEnd/server.log
+BackEnd/*.log
+BackEnd/certain-armor-*.json
+BackEnd/.env
+BackEnd/.env.local
+
+# ========================================
+# DATABASE & DATA FILES
+# ========================================
+*.sqlite
+*.db
+*.sql
+BackEnd/data/
+BackEnd/backup/
+
+# ========================================
+# UPLOADS & MEDIA
+# ========================================
+BackEnd/uploads/*
+!BackEnd/uploads/.gitkeep
+src/uploads/
+public/uploads/
+
+# ========================================
+# LOGS
+# ========================================
+logs/
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+lerna-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# ========================================
+# RUNTIME & CACHE
+# ========================================
+.cache/
+.parcel-cache/
+.eslintcache
+.stylelintcache
 
-# vercel
-.vercel
+# ========================================
+# EDITOR & IDE
+# ========================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
 
-# typescript
+# ========================================
+# OS GENERATED
+# ========================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ========================================
+# TEMPORARY FILES
+# ========================================
+*.tmp
+*.temp
+*.bak
+*.backup
+*.orig
+*.rej
+
+# ========================================
+# BUILD & COMPILATION
+# ========================================
 *.tsbuildinfo
 next-env.d.ts
+*.tsbuildinfo
+
+# ========================================
+# PACKAGE MANAGERS
+# ========================================
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+.lock-wscript
+
+# ========================================
+# VERCEL DEPLOYMENT
+# ========================================
+.vercel
+
+# ========================================
+# SECURITY & KEYS
+# ========================================
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.pem
+*.pkey
+*.priv
+
+# ========================================
+# TESTING & COVERAGE
+# ========================================
+coverage/
+.nyc_output/
+*.lcov
+.jest/
+
+# ========================================
+# MISCELLANEOUS
+# ========================================
+*.tgz
+*.tar.gz
+.cache
+.parcel-cache
+.eslintcache
+.stylelintcache

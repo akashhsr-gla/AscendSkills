@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Follow-up Question Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .question-container {
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .follow-up-indicator {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        .original-question {
+            font-size: 14px;
+            color: #666;
+            margin-top: 10px;
+            font-style: italic;
+        }
+        .debug-info {
+            background: #f5f5f5;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Follow-up Question Display Test</h1>
+    
+    <div class="debug-info">
+        <h3>Debug Info:</h3>
+        <div id="debug-info"></div>
+    </div>
+
+    <div class="question-container">
+        <h3>Current Question</h3>
+        <div id="question-display"></div>
+    </div>
+
+    <div class="question-container">
+        <h3>Follow-up Questions List</h3>
+        <div id="followup-list"></div>
+    </div>
+
+    <script>
+        // Simulate the React state
+        let isFollowUpMode = false;
+        let currentFollowUpIndex = 0;
+        let followUpQuestions = [];
+        let currentQuestion = {
+            question: "Tell me about a particularly challenging project you've worked on. What made it challenging, and how did you overcome those challenges?",
+            type: "behavioral"
+        };
+
+        // Simulate receiving follow-up questions from API
+        function simulateApiResponse() {
+            const mockResponse = {
+                data: {
+                    followUpQuestions: [
+                        "Can you provide a specific example of a challenging project you've faced?",
+                        "What were the main obstacles you encountered during that project?",
+                        "How did you specifically overcome those challenges to succeed in the project?"
+                    ]
+                }
+            };
+            
+            console.log('📡 API Response:', mockResponse);
+            
+            // Simulate entering follow-up mode
+            if (mockResponse.data.followUpQuestions && mockResponse.data.followUpQuestions.length > 0) {
+                console.log('🔄 Entering follow-up mode');
+                isFollowUpMode = true;
+                currentFollowUpIndex = 0;
+                followUpQuestions = mockResponse.data.followUpQuestions;
+                updateDisplay();
+            }
+        }
+
+        function updateDisplay() {
+            const debugInfo = document.getElementById('debug-info');
+            const questionDisplay = document.getElementById('question-display');
+            const followupList = document.getElementById('followup-list');
+
+            // Update debug info
+            debugInfo.innerHTML = `
+                isFollowUpMode: ${isFollowUpMode}<br>
+                currentFollowUpIndex: ${currentFollowUpIndex}<br>
+                followUpQuestions.length: ${followUpQuestions.length}<br>
+                currentFollowUpQuestion: ${isFollowUpMode ? followUpQuestions[currentFollowUpIndex] : 'N/A'}<br>
+                displayQuestion: ${isFollowUpMode ? followUpQuestions[currentFollowUpIndex] : currentQuestion.question}
+            `;
+
+            // Update question display
+            if (isFollowUpMode) {
+                questionDisplay.innerHTML = `
+                    <div style="color: #1976d2; font-size: 14px; margin-bottom: 10px;">
+                        <span>Follow-up Question</span>
+                        <span class="follow-up-indicator">${currentFollowUpIndex + 1} of ${followUpQuestions.length}</span>
+                    </div>
+                    <p style="font-size: 18px; line-height: 1.6;">${followUpQuestions[currentFollowUpIndex]}</p>
+                    <div class="original-question">Original question: ${currentQuestion.question}</div>
+                `;
+            } else {
+                questionDisplay.innerHTML = `
+                    <div style="color: #1976d2; font-size: 14px; margin-bottom: 10px;">
+                        ${currentQuestion.type.charAt(0).toUpperCase() + currentQuestion.type.slice(1)} Question
+                    </div>
+                    <p style="font-size: 18px; line-height: 1.6;">${currentQuestion.question}</p>
+                `;
+            }
+
+            // Update follow-up list
+            if (followUpQuestions.length > 0) {
+                followupList.innerHTML = `
+                    <h4 style="color: #f57c00; margin-bottom: 10px;">AI Follow-up Questions:</h4>
+                    <ul style="margin: 0; padding-left: 20px;">
+                        ${followUpQuestions.map((q, index) => `
+                            <li style="margin-bottom: 5px; color: #e65100; font-size: 14px;">
+                                ${index === currentFollowUpIndex && isFollowUpMode ? '→ ' : '• '}${q}
+                                ${index === currentFollowUpIndex && isFollowUpMode ? ' (CURRENT)' : ''}
+                            </li>
+                        `).join('')}
+                    </ul>
+                `;
+            } else {
+                followupList.innerHTML = '<p style="color: #666;">No follow-up questions available</p>';
+            }
+        }
+
+        // Initialize display
+        updateDisplay();
+
+        // Simulate API response after 2 seconds
+        setTimeout(simulateApiResponse, 2000);
+
+        // Add buttons to test navigation
+        document.body.innerHTML += `
+            <div style="margin-top: 20px;">
+                <button onclick="nextFollowUp()" style="margin-right: 10px; padding: 10px 20px; background: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    Next Follow-up
+                </button>
+                <button onclick="resetToMain()" style="padding: 10px 20px; background: #2196f3; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                    Reset to Main Question
+                </button>
+            </div>
+        `;
+
+        function nextFollowUp() {
+            if (isFollowUpMode && currentFollowUpIndex < followUpQuestions.length - 1) {
+                currentFollowUpIndex++;
+                updateDisplay();
+            }
+        }
+
+        function resetToMain() {
+            isFollowUpMode = false;
+            currentFollowUpIndex = 0;
+            followUpQuestions = [];
+            updateDisplay();
+        }
+    </script>
+</body>
+</html> 
