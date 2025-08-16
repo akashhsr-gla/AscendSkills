@@ -16,7 +16,9 @@
     "lucide-react": "^0.263.1",
     "tailwindcss": "^3.4.14",
     "autoprefixer": "^10.4.21",
-    "postcss": "^8.5.6"
+    "postcss": "^8.5.6",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^2.5.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
