@@ -65,6 +65,7 @@ BackEnd/.env.local
 *.sql
 BackEnd/data/
 BackEnd/backup/
+@backup/
 
 # ========================================
 # UPLOADS & MEDIA
