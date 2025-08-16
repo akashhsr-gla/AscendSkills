@@ -17,6 +17,7 @@ app.use(cors({
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/ascend-skills', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
+  dbName: "ascend_skills" 
 });
 
 const db = mongoose.connection;

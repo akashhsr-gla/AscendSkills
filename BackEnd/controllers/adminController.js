@@ -2212,4 +2212,111 @@ exports.getUserStatistics = async (req, res) => {
   }
 };
 
+// ==================== PASSWORD MANAGEMENT ====================
+
+// Reset user password
+exports.resetUserPassword = async (req, res) => {
+  try {
+    const { id: userId } = req.params;
+    const { newPassword } = req.body;
+
+    if (!userId || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'User ID and new password are required'
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    // Update password
+    user.password = newPassword;
+    user.status.passwordResetToken = undefined;
+    user.status.passwordResetExpires = undefined;
+
+    await user.save();
+
+    // Log admin action
+    await Analytics.create({
+      user: req.user.id,
+      type: 'admin',
+      details: {
+        action: 'reset_user_password',
+        targetUserId: userId,
+        newPassword: '********' // Mask password in logs
+      }
+    });
+
+    res.json({
+      success: true,
+      message: 'User password reset successfully'
+    });
+
+  } catch (error) {
+    console.error('Reset user password error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while resetting user password',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
+// View user password status
+exports.viewUserPasswordStatus = async (req, res) => {
+  try {
+    const { id: userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: 'User ID is required'
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    const passwordStatus = {
+      isPasswordSet: !!user.password,
+      passwordResetToken: user.status.passwordResetToken ? 'Set' : 'Not Set',
+      passwordResetTokenExpiresAt: user.status.passwordResetExpires ? user.status.passwordResetExpires.toISOString() : null
+    };
+
+    // Log admin action
+    await Analytics.create({
+      user: req.user.id,
+      type: 'admin',
+      details: {
+        action: 'view_user_password_status',
+        targetUserId: userId
+      }
+    });
+
+    res.json({
+      success: true,
+      data: passwordStatus
+    });
+
+  } catch (error) {
+    console.error('View user password status error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Server error while viewing user password status',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
 module.exports = exports; 

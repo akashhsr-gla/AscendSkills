@@ -443,6 +443,58 @@ class AdminService {
       return { success: false, message: 'Network error while fetching transactions' } as any;
     }
   }
+
+  // ==================== PASSWORD MANAGEMENT ====================
+
+  async resetUserPassword(userId: string, newPassword: string): Promise<{ success: boolean; message?: string }> {
+    try {
+      const token = authService.getToken();
+      if (!token) return { success: false, message: 'No authentication token found' };
+      
+      const response = await fetch(`${this.baseUrl}/admin/users/${userId}/reset-password`, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json', 
+          'Authorization': `Bearer ${token}` 
+        },
+        body: JSON.stringify({ newPassword })
+      });
+      
+      const result = await response.json();
+      if (!response.ok) return { success: false, message: result.message || 'Failed to reset user password' };
+      return { success: true, message: result.message };
+    } catch (error) {
+      console.error('Error resetting user password:', error);
+      return { success: false, message: 'Network error while resetting password' };
+    }
+  }
+
+  async getUserPasswordStatus(userId: string): Promise<{ success: boolean; data?: PasswordStatus; message?: string }> {
+    try {
+      const token = authService.getToken();
+      if (!token) return { success: false, message: 'No authentication token found' };
+      
+      const response = await fetch(`${this.baseUrl}/admin/users/${userId}/password-status`, {
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      const result = await response.json();
+      if (!response.ok) return { success: false, message: result.message || 'Failed to get user password status' };
+      return { success: true, data: result.data };
+    } catch (error) {
+      console.error('Error getting user password status:', error);
+      return { success: false, message: 'Network error while getting password status' };
+    }
+  }
+}
+
+// ==================== PASSWORD MANAGEMENT INTERFACES ====================
+
+export interface PasswordStatus {
+  isPasswordSet: boolean;
+  passwordResetToken: string;
+  passwordResetTokenExpiresAt: string | null;
 }
 
 export const adminService = new AdminService(); 

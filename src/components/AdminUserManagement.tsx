@@ -10,6 +10,7 @@ import {
   Edit, 
   Trash2, 
   Eye, 
+  EyeOff,
   MoreHorizontal,
   ChevronLeft,
   ChevronRight,
@@ -17,7 +18,7 @@ import {
   Check,
   AlertCircle
 } from 'lucide-react';
-import { adminService, User, CreateUserData, UpdateUserData } from '@/services/adminService';
+import { adminService, User, CreateUserData, UpdateUserData, PasswordStatus } from '@/services/adminService';
 
 const AdminUserManagement: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
@@ -51,6 +52,13 @@ const AdminUserManagement: React.FC = () => {
 
   const [editForm, setEditForm] = useState<UpdateUserData>({});
   const [subForm, setSubForm] = useState<{ planKey: 'monthly'|'quarterly'|'half_yearly'|'free'; isActive: boolean }>({ planKey: 'free', isActive: false });
+
+  // Password management state
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordStatus, setPasswordStatus] = useState<PasswordStatus | null>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -243,6 +251,73 @@ const AdminUserManagement: React.FC = () => {
     setShowDeleteModal(true);
   };
 
+  // Password management functions
+  const openPasswordModal = async (user: User) => {
+    setSelectedUser(user);
+    setPasswordLoading(true);
+    setNewPassword('');
+    setShowPassword(false);
+    
+    try {
+      const response = await adminService.getUserPasswordStatus(user._id);
+      if (response.success && response.data) {
+        setPasswordStatus(response.data);
+        setShowPasswordModal(true);
+      } else {
+        setNotification({
+          type: 'error',
+          message: response.message || 'Failed to get password status'
+        });
+      }
+    } catch (error) {
+      setNotification({
+        type: 'error',
+        message: 'Network error while getting password status'
+      });
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!selectedUser || !newPassword.trim()) {
+      setNotification({
+        type: 'error',
+        message: 'Please enter a new password'
+      });
+      return;
+    }
+
+    setPasswordLoading(true);
+    try {
+      const response = await adminService.resetUserPassword(selectedUser._id, newPassword);
+      
+      if (response.success) {
+        setNotification({
+          type: 'success',
+          message: response.message || 'Password reset successfully!'
+        });
+        setShowPasswordModal(false);
+        setNewPassword('');
+        setPasswordStatus(null);
+        setSelectedUser(null);
+        setShowPassword(false);
+      } else {
+        setNotification({
+          type: 'error',
+          message: response.message || 'Failed to reset password'
+        });
+      }
+    } catch (error) {
+      setNotification({
+        type: 'error',
+        message: 'Network error while resetting password'
+      });
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Notification */}
@@ -424,6 +499,13 @@ const AdminUserManagement: React.FC = () => {
                             title="Edit User"
                           >
                             <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => openPasswordModal(user)}
+                            className="text-blue-600 hover:text-blue-900 p-1"
+                            title="Manage Password"
+                          >
+                            <Eye className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() => openDeleteModal(user)}
@@ -734,6 +816,102 @@ const AdminUserManagement: React.FC = () => {
                 className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
               >
                 Delete Permanently
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Password Management Modal */}
+      {showPasswordModal && selectedUser && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Password Management</h3>
+              <button onClick={() => setShowPasswordModal(false)}>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              {/* User Info */}
+              <div className="bg-gray-50 rounded-lg p-3">
+                <div className="text-sm text-gray-600">User: <span className="font-medium text-gray-900">{selectedUser.name}</span></div>
+                <div className="text-sm text-gray-600">Email: <span className="font-medium text-gray-900">{selectedUser.email}</span></div>
+              </div>
+
+              {/* Password Status */}
+              {passwordStatus && (
+                <div className="space-y-3">
+                  <h4 className="font-medium text-gray-900">Password Status</h4>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">Password Set:</span>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        passwordStatus.isPasswordSet ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                        {passwordStatus.isPasswordSet ? 'Yes' : 'No'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-gray-600">Reset Token:</span>
+                      <span className="text-gray-900">{passwordStatus.passwordResetToken}</span>
+                    </div>
+                    {passwordStatus.passwordResetTokenExpiresAt && (
+                      <div className="col-span-2">
+                        <span className="text-gray-600">Token Expires:</span>
+                        <span className="ml-2 text-gray-900">
+                          {new Date(passwordStatus.passwordResetTokenExpiresAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* New Password Input */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    placeholder="Enter new password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    title={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Password must be at least 6 characters with uppercase, lowercase, and number
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end space-x-3 mt-6">
+              <button
+                onClick={() => setShowPasswordModal(false)}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleResetPassword}
+                disabled={passwordLoading || !newPassword.trim()}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {passwordLoading ? 'Resetting...' : 'Reset Password'}
               </button>
             </div>
           </div>

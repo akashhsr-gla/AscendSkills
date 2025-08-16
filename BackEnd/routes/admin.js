@@ -72,6 +72,26 @@ router.delete('/users/:id',
   catchAsync(adminController.deleteUser)
 );
 
+// ==================== PASSWORD MANAGEMENT ====================
+
+// Reset user password
+router.post('/users/:id/reset-password',
+  [
+    body('newPassword')
+      .isLength({ min: 6 })
+      .withMessage('Password must be at least 6 characters long')
+      .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/)
+      .withMessage('Password must contain at least one lowercase letter, one uppercase letter, and one number')
+  ],
+  handleValidationErrors,
+  catchAsync(adminController.resetUserPassword)
+);
+
+// View user password status
+router.get('/users/:id/password-status',
+  catchAsync(adminController.viewUserPasswordStatus)
+);
+
 // Manage defaulters
 router.post('/users/defaulters',
   [
