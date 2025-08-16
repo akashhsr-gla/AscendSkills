@@ -10,6 +10,14 @@ interface User {
   role: string;
 }
 
+interface BackendUser {
+  id?: string;
+  _id?: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
@@ -55,11 +63,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           if (response.ok) {
             const data = await response.json();
             if (data.success && data.data) {
+              const backendUser: BackendUser = data.data;
               setUser({
-                id: data.data._id,
-                name: data.data.name,
-                email: data.data.email,
-                role: data.data.role
+                id: backendUser.id || backendUser._id || '',
+                name: backendUser.name,
+                email: backendUser.email,
+                role: backendUser.role
               });
             } else {
               authService.logout();
@@ -91,11 +100,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       if (response.success && response.data) {
         // Set user data from login response
+        const backendUser: BackendUser = response.data.user;
         setUser({
-          id: response.data.user.id || response.data.user._id,
-          name: response.data.user.name,
-          email: response.data.user.email,
-          role: response.data.user.role
+          id: backendUser.id || backendUser._id || '',
+          name: backendUser.name,
+          email: backendUser.email,
+          role: backendUser.role
         });
         return { success: true, message: response.message };
       } else {

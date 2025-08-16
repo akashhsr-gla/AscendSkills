@@ -1,5 +1,5 @@
 "use client";
-import React, { useRef, useState, useEffect, useCallback } from "react";
+import React, { useRef, useState, useEffect, useCallback, Suspense } from "react";
 import { motion } from "framer-motion";
 import { 
   Mic, 
@@ -2064,15 +2064,17 @@ function InterviewContent() {
 
 export default function InterviewStartPage() {
   return (
-    <SecurityProvider
-      securityLevel="high"
-      enableScreenshotPrevention={true}
-      enableKeyboardBlocking={true}
-      enableTabSwitchDetection={true}
-      enableCopyPastePrevention={true}
-      onSecurityViolation={() => {}}
-    >
-      <InterviewContent />
-    </SecurityProvider>
+    <Suspense fallback={<div>Loading...</div>}>
+      <SecurityProvider
+        securityLevel="high"
+        enableScreenshotPrevention={true}
+        enableKeyboardBlocking={true}
+        enableTabSwitchDetection={true}
+        enableCopyPastePrevention={true}
+        onSecurityViolation={() => {}}
+      >
+        <InterviewContent />
+      </SecurityProvider>
+    </Suspense>
   );
 } 
