@@ -32,9 +32,7 @@ const Header = () => {
             <a href="/" className="text-gray-700 hover:text-primary-500 transition-colors font-medium">
               Home
             </a>
-            <a href="/about" className="text-gray-700 hover:text-primary-500 transition-colors font-medium">
-              About
-            </a>
+            
             <a href="/jobs" className="text-gray-700 hover:text-primary-500 transition-colors font-medium">
               Jobs
             </a>
@@ -45,7 +43,7 @@ const Header = () => {
               Interview
             </a>
             <a href="/about" className="text-gray-700 hover:text-primary-500 transition-colors font-medium">
-              Plans
+              About Us
             </a>
             <a href="/contact" className="text-gray-700 hover:text-primary-500 transition-colors font-medium">
               Contact
