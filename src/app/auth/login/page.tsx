@@ -18,6 +18,7 @@ export default function LoginPage() {
   const [errors, setErrors] = useState<{[key: string]: string}>({});
   const [isLoading, setIsLoading] = useState(false);
   const [generalError, setGeneralError] = useState<string>('');
+  const [showForgottenPassword, setShowForgottenPassword] = useState(false);
 
   const validateForm = () => {
     const newErrors: {[key: string]: string} = {};
@@ -44,7 +45,7 @@ export default function LoginPage() {
       const response = await login(formData.email, formData.password);
       
       if (response.success) {
-        router.push('/dashboard');
+        router.push('/');
       } else {
         setGeneralError(response.message || 'Login failed');
       }
@@ -127,31 +128,43 @@ export default function LoginPage() {
             </div>
            
             {/* Forgotten Password Note */}
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-              <div className="flex items-start space-x-3">
-                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <AlertCircle className="w-4 h-4 text-blue-600" />
-                </div>
-                <div className="flex-1">
-                  <h4 className="text-sm font-semibold text-blue-900 mb-1">Forgotten Password?</h4>
-                  <p className="text-sm text-blue-700 leading-relaxed">
-                    If you've forgotten your password or want to change it, please contact us at:
-                  </p>
-                  <div className="mt-2 space-y-1">
-                    <div className="flex items-center text-sm text-blue-700">
-                      <span className="font-medium mr-2">📱 Mobile:</span>
-                      <span className="font-mono">+91 81218 40706</span>
+            <div className="text-center">
+              <button
+                type="button"
+                onClick={() => setShowForgottenPassword(!showForgottenPassword)}
+                className="text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors"
+              >
+                {showForgottenPassword ? 'Hide' : 'Forgotten Password?'} Click here
+              </button>
+              
+              {showForgottenPassword && (
+                <div className="mt-4 bg-blue-50 border border-blue-200 rounded-xl p-4">
+                  <div className="flex items-start space-x-3">
+                    <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <AlertCircle className="w-4 h-4 text-blue-600" />
                     </div>
-                    <div className="flex items-center text-sm text-blue-700">
-                      <span className="font-medium mr-2">✉️ Email:</span>
-                      <span className="font-mono">ascendskillsedutech@gmail.com</span>
+                    <div className="flex-1">
+                      <h4 className="text-sm font-semibold text-blue-900 mb-1">Need Help?</h4>
+                      <p className="text-sm text-blue-700 leading-relaxed">
+                        If you've forgotten your password or want to change it, please contact us at:
+                      </p>
+                      <div className="mt-2 space-y-1">
+                        <div className="flex items-center text-sm text-blue-700">
+                          <span className="font-medium mr-2">📱 Mobile:</span>
+                          <span className="font-mono">+91 81218 40706</span>
+                        </div>
+                        <div className="flex items-center text-sm text-blue-700">
+                          <span className="font-medium mr-2">✉️ Email:</span>
+                          <span className="font-mono">ascendskillsedutech@gmail.com</span>
+                        </div>
+                      </div>
+                      <p className="text-xs text-blue-600 mt-2 italic">
+                        Please provide your registered mobile number or email for assistance.
+                      </p>
                     </div>
                   </div>
-                  <p className="text-xs text-blue-600 mt-2 italic">
-                    Please provide your registered mobile number or email for assistance.
-                  </p>
                 </div>
-              </div>
+              )}
             </div>
            
             {generalError && (
