@@ -77,16 +77,11 @@ class ProfileService {
 
   async getProfile(): Promise<{ success: boolean; data?: UserProfile; message?: string }> {
     try {
-      const token = authService.getToken();
-      if (!token) {
-        return { success: false, message: 'No authentication token found' };
-      }
-
       const response = await fetch(`${this.baseUrl}/auth/profile`, {
         method: 'GET',
+        credentials: 'include',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         }
       });
 
@@ -105,16 +100,11 @@ class ProfileService {
 
   async updateProfile(updateData: ProfileUpdateData): Promise<{ success: boolean; data?: UserProfile; message?: string }> {
     try {
-      const token = authService.getToken();
-      if (!token) {
-        return { success: false, message: 'No authentication token found' };
-      }
-
       const response = await fetch(`${this.baseUrl}/auth/profile`, {
         method: 'PATCH',
+        credentials: 'include',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(updateData)
       });
@@ -134,16 +124,11 @@ class ProfileService {
 
   async changePassword(currentPassword: string, newPassword: string): Promise<{ success: boolean; message: string }> {
     try {
-      const token = authService.getToken();
-      if (!token) {
-        return { success: false, message: 'No authentication token found' };
-      }
-
       const response = await fetch(`${this.baseUrl}/auth/change-password`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           currentPassword,

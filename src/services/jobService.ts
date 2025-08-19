@@ -133,14 +133,13 @@ class JobService {
 
   private async makeRequest<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const url = `${this.baseURL}/jobs${endpoint}`;
-    const token = getAuthTokenString();
     
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
-        ...(token && { Authorization: `Bearer ${token}` }),
         ...options?.headers,
       },
+      credentials: 'include',
       ...options,
     };
 

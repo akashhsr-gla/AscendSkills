@@ -48,15 +48,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        // Check if user is authenticated
-        const token = authService.getToken();
-        if (token && authService.isAuthenticated()) {
-          // Fetch user info from backend
-          const response = await fetch('http://localhost:5000/api/auth/profile', {
+        // Check if user is authenticated using cookies
+        if (authService.isAuthenticated()) {
+          // Fetch user info from backend using cookies
+          const response = await fetch('https://ascendskills.onrender.com/api/auth/profile', {
             method: 'GET',
+            credentials: 'include',
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
+              'Content-Type': 'application/json'
             }
           });
 
@@ -131,8 +130,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    authService.logout();
+  const logout = async () => {
+    await authService.logout();
     setUser(null);
   };
 

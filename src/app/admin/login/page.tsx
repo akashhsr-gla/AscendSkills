@@ -59,21 +59,12 @@ export default function AdminLogin() {
 
   const checkAdminStatus = async () => {
     try {
-      const token = localStorage.getItem('auth_token');
-      if (!token) {
-        setNotification({
-          type: 'error',
-          message: 'Authentication failed. Please try again.'
-        });
-        return;
-      }
-
-      // Make a direct API call to check user profile
-      const response = await fetch('http://localhost:5000/api/auth/profile', {
+      // Make a direct API call to check user profile using cookies
+      const response = await fetch('https://ascendskills.onrender.com/api/auth/profile', {
         method: 'GET',
+        credentials: 'include',
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          'Content-Type': 'application/json'
         }
       });
 

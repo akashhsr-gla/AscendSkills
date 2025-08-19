@@ -260,14 +260,8 @@ class InterviewService {
   private async makeRequest<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
     
-    // Get auth token
-    const token = getAuthTokenString();
-    
     console.log(`🌐 Making request to: ${url}`);
-    console.log(`🔑 Auth token present: ${!!token}`);
-    if (token) {
-      console.log(`🔑 Token preview: ${token.substring(0, 20)}...`);
-    }
+    console.log(`🍪 Using cookie-based authentication`);
     
     try {
       // Extract options without headers to avoid conflicts
@@ -275,7 +269,6 @@ class InterviewService {
       
       const headers = {
         'Content-Type': 'application/json',
-        ...(token && { 'Authorization': `Bearer ${token}` }),
         ...(optionsHeaders || {}),
       };
       
@@ -284,6 +277,7 @@ class InterviewService {
       
       const response = await fetch(url, {
         ...otherOptions,
+        credentials: 'include',
         headers,
       });
 
@@ -445,16 +439,9 @@ class InterviewService {
       type: string;
     };
   }> {
-    // Get auth token using the proper utility
-    const token = getAuthTokenString();
-    if (!token) {
-      throw new Error('Authentication required');
-    }
-
     return this.makeRequest('/interview/ai/start', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -466,14 +453,9 @@ class InterviewService {
 
   // Get detailed interview report
   async getDetailedReport(interviewId: string): Promise<DetailedInterviewReport> {
-    const token = getAuthTokenString();
-    if (!token) {
-      throw new Error('Authentication required');
-    }
-
     const response = await this.makeRequest<{ success: boolean; data: DetailedInterviewReport }>(`/interview/ai/${interviewId}/detailed-report`, {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
       },
     });
 

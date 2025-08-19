@@ -33,30 +33,27 @@ class AuthService {
   private token: string | null = null;
 
   constructor() {
-    // Try to load token from localStorage
-    if (typeof window !== 'undefined') {
-      const storedToken = localStorage.getItem('auth_token');
-      if (storedToken) {
-        this.token = storedToken;
-      }
-    }
+    // For cookie-based auth, we don't need to store token in localStorage
+    // The token will be automatically sent with requests via cookies
   }
 
   async login(credentials: LoginData): Promise<AuthResponse> {
     try {
-      // Use the debug login endpoint
+      // Use the debug login endpoint with credentials
       const response = await fetch(`${API_BASE_URL}/auth/debug-login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // Include cookies in the request
         body: JSON.stringify(credentials),
       });
 
       const data = await response.json();
 
       if (data.success && data.data?.token) {
-        this.setToken(data.data.token);
+        // Store token in memory for immediate use (cookie will handle persistence)
+        this.token = data.data.token;
         return data;
       } else {
         throw new Error(data.message || 'Login failed');
@@ -74,13 +71,15 @@ class AuthService {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include', // Include cookies in the request
         body: JSON.stringify(userData),
       });
 
       const data = await response.json();
 
       if (data.success && data.data?.token) {
-        this.setToken(data.data.token);
+        // Store token in memory for immediate use (cookie will handle persistence)
+        this.token = data.data.token;
       }
 
       return data;
@@ -93,29 +92,33 @@ class AuthService {
     }
   }
 
-  logout(): void {
-    this.token = null;
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('auth_token');
+  async logout(): Promise<void> {
+    try {
+      // Call logout endpoint to clear server-side session and cookie
+      await fetch(`${API_BASE_URL}/auth/logout`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      // Clear local token
+      this.token = null;
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('auth_token'); // Clean up any existing localStorage
+      }
     }
   }
 
   getToken(): string | null {
-    // Always check localStorage to ensure we have the latest token
-    if (typeof window !== 'undefined') {
-      const storedToken = localStorage.getItem('auth_token');
-      if (storedToken && storedToken !== this.token) {
-        this.token = storedToken;
-      }
-    }
+    // For cookie-based auth, we return the in-memory token
+    // The actual token is stored in HttpOnly cookies and sent automatically
     return this.token;
   }
 
   setToken(token: string): void {
     this.token = token;
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('auth_token', token);
-    }
+    // Don't store in localStorage for security (use cookies instead)
   }
 
   isAuthenticated(): boolean {
@@ -123,24 +126,19 @@ class AuthService {
   }
 
   async validateToken(): Promise<boolean> {
-    if (!this.token) {
-      return false;
-    }
-
     try {
-      // Try to refresh the token
-      const response = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
-        method: 'POST',
+      // Validate token using cookies (no need to pass token in header)
+      const response = await fetch(`${API_BASE_URL}/auth/profile`, {
+        method: 'GET',
+        credentials: 'include',
         headers: {
-          'Authorization': `Bearer ${this.token}`,
           'Content-Type': 'application/json',
         },
       });
 
       if (response.ok) {
         const data = await response.json();
-        if (data.success && data.data?.token) {
-          this.setToken(data.data.token);
+        if (data.success && data.data) {
           return true;
         }
       }
@@ -154,12 +152,10 @@ class AuthService {
 
   async refreshToken(): Promise<boolean> {
     try {
-      if (!this.token) return false;
-      
       const response = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
-          'Authorization': `Bearer ${this.token}`,
           'Content-Type': 'application/json',
         },
       });
@@ -167,7 +163,7 @@ class AuthService {
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.data?.token) {
-          this.setToken(data.data.token);
+          this.token = data.data.token;
           return true;
         }
       }

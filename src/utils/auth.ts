@@ -9,8 +9,8 @@ export const setAuthToken = (token: string): void => {
   authService.setToken(token);
 };
 
-export const removeAuthToken = (): void => {
-  authService.logout();
+export const removeAuthToken = async (): Promise<void> => {
+  await authService.logout();
 };
 
 export const isAuthenticated = (): boolean => {

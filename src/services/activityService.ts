@@ -75,14 +75,12 @@ class ActivityService {
   private baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
   private async makeRequest(endpoint: string, options: RequestInit = {}) {
-    const token = authService.getToken();
-    
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
-        ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },
+      credentials: 'include',
       ...options,
     };
 

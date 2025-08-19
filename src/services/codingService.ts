@@ -61,14 +61,12 @@ export interface CodingQuestion {
 
 class CodingService {
   private async makeRequest(url: string, options: RequestInit = {}) {
-    const token = authService.getToken();
-    
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
-        ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },
+      credentials: 'include',
       ...options,
     };
 

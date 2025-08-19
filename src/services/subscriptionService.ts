@@ -40,10 +40,8 @@ export interface PlansResponse {
 
 class SubscriptionService {
   private getAuthHeaders(): HeadersInit {
-    const token = authService.getToken();
     return {
-      'Content-Type': 'application/json',
-      ...(token && { Authorization: `Bearer ${token}` })
+      'Content-Type': 'application/json'
     };
   }
 
@@ -51,6 +49,7 @@ class SubscriptionService {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/profile`, {
         method: 'GET',
+        credentials: 'include',
         headers: this.getAuthHeaders(),
       });
 
@@ -111,6 +110,7 @@ class SubscriptionService {
     try {
       const response = await fetch(`${API_BASE_URL}/subscriptions/order`, {
         method: 'POST',
+        credentials: 'include',
         headers: this.getAuthHeaders(),
         body: JSON.stringify({ planKey })
       });
