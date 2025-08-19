@@ -321,6 +321,12 @@ exports.login = async (req, res) => {
     };
 
     res.cookie('token', token, cookieOptions);
+    console.log('🍪 Set-Cookie token, options:', {
+      httpOnly: cookieOptions.httpOnly,
+      secure: cookieOptions.secure,
+      sameSite: cookieOptions.sameSite,
+      maxAge: cookieOptions.maxAge
+    });
 
     // Send response
     res.json({

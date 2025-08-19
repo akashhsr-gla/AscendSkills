@@ -55,9 +55,11 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Debug middleware to log all requests
+// Debug middleware to log all requests (origin + cookie presence)
 app.use((req, res, next) => {
-  console.log('🌐 Request:', req.method, req.originalUrl);
+  const origin = req.headers.origin || 'N/A';
+  const hasTokenCookie = !!(req.cookies && req.cookies.token);
+  console.log('🌐 Request:', req.method, req.originalUrl, '| Origin:', origin, '| Cookie token present:', hasTokenCookie);
   next();
 });
 

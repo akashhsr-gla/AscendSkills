@@ -39,8 +39,8 @@ class AuthService {
 
   async login(credentials: LoginData): Promise<AuthResponse> {
     try {
-      // Use the debug login endpoint with credentials
-      const response = await fetch(`${API_BASE_URL}/auth/debug-login`, {
+      // Use the real login endpoint with credentials (sets HttpOnly cookie)
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
