@@ -1,35 +1,32 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
 const app = express();
 
 // Middleware
-// Trust proxy so secure cookies work behind Render/Proxy
-app.set('trust proxy', 1);
-
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
-app.use(cookieParser());
 app.use(cors({
   origin: [
     'http://localhost:3000',
     'https://ascend-skills.vercel.app'
   ],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-session-id', 'x-api-key', 'x-device-fingerprint']
 }));
 
-// Handle preflight for all routes
+// Preflight handling
 app.options('*', cors({
   origin: [
     'http://localhost:3000',
     'https://ascend-skills.vercel.app'
   ],
-  credentials: true
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-session-id', 'x-api-key', 'x-device-fingerprint']
 }));
 
 // MongoDB connection
@@ -55,11 +52,9 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Debug middleware to log all requests (origin + cookie presence)
+// Debug middleware to log all requests
 app.use((req, res, next) => {
-  const origin = req.headers.origin || 'N/A';
-  const hasTokenCookie = !!(req.cookies && req.cookies.token);
-  console.log('🌐 Request:', req.method, req.originalUrl, '| Origin:', origin, '| Cookie token present:', hasTokenCookie);
+  console.log('🌐 Request:', req.method, req.originalUrl);
   next();
 });
 

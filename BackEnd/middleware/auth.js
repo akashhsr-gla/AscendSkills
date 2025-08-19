@@ -29,7 +29,6 @@ const authenticate = async (req, res, next) => {
     }
     
     if (!token) {
-      console.log('🔒 No token found on request. Headers Authorization present:', !!req.headers.authorization, '| Cookie present:', !!(req.cookies && req.cookies.token));
       return res.status(401).json({
         success: false,
         message: 'Access token required'
@@ -38,7 +37,6 @@ const authenticate = async (req, res, next) => {
     
     // Verify token
     const decoded = await promisify(jwt.verify)(token, JWT_SECRET);
-    console.log('🔑 Token decoded for userId:', decoded.userId);
     
     // Check if user still exists (with better error handling)
     let user;

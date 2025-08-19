@@ -73,15 +73,24 @@ export interface ProfileUpdateData {
 }
 
 class ProfileService {
-  private baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+  private baseUrl = (process.env.NEXT_PUBLIC_API_URL || (
+    (typeof window !== 'undefined' && window.location.hostname === 'localhost')
+      ? 'http://localhost:5000/api'
+      : 'https://ascendskills.onrender.com/api'
+  )).replace(/\/$/, '');
 
   async getProfile(): Promise<{ success: boolean; data?: UserProfile; message?: string }> {
     try {
+      const token = authService.getToken();
+      if (!token) {
+        return { success: false, message: 'No authentication token found' };
+      }
+
       const response = await fetch(`${this.baseUrl}/auth/profile`, {
         method: 'GET',
-        credentials: 'include',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -100,11 +109,16 @@ class ProfileService {
 
   async updateProfile(updateData: ProfileUpdateData): Promise<{ success: boolean; data?: UserProfile; message?: string }> {
     try {
+      const token = authService.getToken();
+      if (!token) {
+        return { success: false, message: 'No authentication token found' };
+      }
+
       const response = await fetch(`${this.baseUrl}/auth/profile`, {
         method: 'PATCH',
-        credentials: 'include',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(updateData)
       });
@@ -124,11 +138,16 @@ class ProfileService {
 
   async changePassword(currentPassword: string, newPassword: string): Promise<{ success: boolean; message: string }> {
     try {
+      const token = authService.getToken();
+      if (!token) {
+        return { success: false, message: 'No authentication token found' };
+      }
+
       const response = await fetch(`${this.baseUrl}/auth/change-password`, {
         method: 'POST',
-        credentials: 'include',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
           currentPassword,

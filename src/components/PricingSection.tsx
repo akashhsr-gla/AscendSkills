@@ -20,7 +20,11 @@ interface SubscriptionPlan {
 // Server-side data fetching function
 export async function getSubscriptionPlans(): Promise<SubscriptionPlan[]> {
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/subscriptions/plans`, {
+    const DEFAULT_API = (typeof window !== 'undefined' && window.location.hostname === 'localhost')
+      ? 'http://localhost:5000'
+      : 'https://ascendskills.onrender.com';
+    const API_BASE = (process.env.NEXT_PUBLIC_API_URL || `${DEFAULT_API}/api`).replace(/\/$/, '');
+    const response = await fetch(`${API_BASE}/subscriptions/plans`, {
       cache: 'no-store' // Ensure fresh data
     });
     

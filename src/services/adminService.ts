@@ -150,13 +150,11 @@ export interface UsersResponse {
 }
 
 class AdminService {
-  private baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-
-  private getAuthHeaders(): HeadersInit {
-    return {
-      'Content-Type': 'application/json'
-    };
-  }
+  private baseUrl = (process.env.NEXT_PUBLIC_API_URL || (
+    (typeof window !== 'undefined' && window.location.hostname === 'localhost')
+      ? 'http://localhost:5000/api'
+      : 'https://ascendskills.onrender.com/api'
+  )).replace(/\/$/, '');
 
   async getUsers(params: {
     page?: number;
@@ -170,6 +168,11 @@ class AdminService {
     isDefaulter?: string;
   } = {}): Promise<{ success: boolean; data?: UsersResponse; message?: string }> {
     try {
+      const token = authService.getToken();
+      if (!token) {
+        return { success: false, message: 'No authentication token found' };
+      }
+
       const queryParams = new URLSearchParams();
       Object.entries(params).forEach(([key, value]) => {
         if (value !== undefined && value !== '') {
@@ -179,8 +182,10 @@ class AdminService {
 
       const response = await fetch(`${this.baseUrl}/admin/users?${queryParams}`, {
         method: 'GET',
-        credentials: 'include',
-        headers: this.getAuthHeaders()
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
       });
 
       const result = await response.json();
@@ -198,10 +203,17 @@ class AdminService {
 
   async getUserById(id: string): Promise<{ success: boolean; data?: User; message?: string }> {
     try {
+      const token = authService.getToken();
+      if (!token) {
+        return { success: false, message: 'No authentication token found' };
+      }
+
       const response = await fetch(`${this.baseUrl}/admin/users/${id}`, {
         method: 'GET',
-        credentials: 'include',
-        headers: this.getAuthHeaders()
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
       });
 
       const result = await response.json();
@@ -219,10 +231,17 @@ class AdminService {
 
   async createUser(userData: CreateUserData): Promise<{ success: boolean; data?: User; message?: string }> {
     try {
+      const token = authService.getToken();
+      if (!token) {
+        return { success: false, message: 'No authentication token found' };
+      }
+
       const response = await fetch(`${this.baseUrl}/admin/users`, {
         method: 'POST',
-        credentials: 'include',
-        headers: this.getAuthHeaders(),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(userData)
       });
 
@@ -241,10 +260,17 @@ class AdminService {
 
   async updateUser(id: string, updateData: UpdateUserData): Promise<{ success: boolean; data?: User; message?: string }> {
     try {
+      const token = authService.getToken();
+      if (!token) {
+        return { success: false, message: 'No authentication token found' };
+      }
+
       const response = await fetch(`${this.baseUrl}/admin/users/${id}`, {
         method: 'PATCH',
-        credentials: 'include',
-        headers: this.getAuthHeaders(),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(updateData)
       });
 
@@ -263,10 +289,17 @@ class AdminService {
 
   async deleteUser(id: string, permanent: boolean = false, reason?: string): Promise<{ success: boolean; message: string }> {
     try {
+      const token = authService.getToken();
+      if (!token) {
+        return { success: false, message: 'No authentication token found' };
+      }
+
       const response = await fetch(`${this.baseUrl}/admin/users/${id}`, {
         method: 'DELETE',
-        credentials: 'include',
-        headers: this.getAuthHeaders(),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ permanent, reason })
       });
 
@@ -285,10 +318,16 @@ class AdminService {
 
   async getUserStatistics(): Promise<{ success: boolean; data?: any; message?: string }> {
     try {
+      const token = authService.getToken();
+      if (!token) {
+        return { success: false, message: 'No authentication token found' };
+      }
+
       const response = await fetch(`${this.baseUrl}/admin/users/statistics`, {
         method: 'GET',
-        credentials: 'include',
-        headers: this.getAuthHeaders()
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
 
       const result = await response.json();
@@ -322,10 +361,11 @@ class AdminService {
 
   async seedDefaultPlans(): Promise<{ success: boolean; data?: SubscriptionPlan[]; message?: string }> {
     try {
+      const token = authService.getToken();
+      if (!token) return { success: false, message: 'No authentication token found' };
       const response = await fetch(`${this.baseUrl}/subscriptions/admin/seed`, {
         method: 'POST',
-        credentials: 'include',
-        headers: this.getAuthHeaders()
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` }
       });
       const result = await response.json();
       if (!response.ok) return { success: false, message: result.message || 'Failed to seed plans' };
@@ -338,10 +378,11 @@ class AdminService {
 
   async upsertPlan(payload: { key: SubscriptionPlan['key']; name: string; description?: string; durationDays: number; priceInr: number; isActive?: boolean; sortOrder?: number }): Promise<{ success: boolean; data?: SubscriptionPlan; message?: string }> {
     try {
+      const token = authService.getToken();
+      if (!token) return { success: false, message: 'No authentication token found' };
       const response = await fetch(`${this.baseUrl}/subscriptions/admin/plan`, {
         method: 'POST',
-        credentials: 'include',
-        headers: this.getAuthHeaders(),
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(payload)
       });
       const result = await response.json();
@@ -355,10 +396,11 @@ class AdminService {
 
   async togglePlan(planId: string): Promise<{ success: boolean; data?: SubscriptionPlan; message?: string }> {
     try {
+      const token = authService.getToken();
+      if (!token) return { success: false, message: 'No authentication token found' };
       const response = await fetch(`${this.baseUrl}/subscriptions/admin/plan/${planId}/toggle`, {
         method: 'PATCH',
-        credentials: 'include',
-        headers: this.getAuthHeaders()
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       const result = await response.json();
       if (!response.ok) return { success: false, message: result.message || 'Failed to toggle plan' };
@@ -371,10 +413,11 @@ class AdminService {
 
   async setUserSubscription(userId: string, payload: { planKey: 'monthly' | 'quarterly' | 'half_yearly' | null; isActive: boolean }): Promise<{ success: boolean; message?: string; data?: User }> {
     try {
+      const token = authService.getToken();
+      if (!token) return { success: false, message: 'No authentication token found' } as any;
       const response = await fetch(`${this.baseUrl}/subscriptions/admin/user/${userId}/subscription`, {
         method: 'PUT',
-        credentials: 'include',
-        headers: this.getAuthHeaders(),
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(payload)
       });
       const result = await response.json();
@@ -388,12 +431,13 @@ class AdminService {
 
   async listTransactions(params: { page?: number; limit?: number; status?: string; userId?: string } = {}): Promise<{ success: boolean; data?: { items: PaymentTransaction[]; pagination: { page: number; limit: number; total: number } }; message?: string }> {
     try {
+      const token = authService.getToken();
+      if (!token) return { success: false, message: 'No authentication token found' } as any;
       const query = new URLSearchParams();
       Object.entries(params).forEach(([k, v]) => { if (v !== undefined && v !== '') query.append(k, String(v)); });
       const response = await fetch(`${this.baseUrl}/subscriptions/admin/transactions?${query}`, {
         method: 'GET',
-        credentials: 'include',
-        headers: this.getAuthHeaders()
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       const result = await response.json();
       if (!response.ok) return { success: false, message: result.message || 'Failed to fetch transactions' } as any;
@@ -408,10 +452,15 @@ class AdminService {
 
   async resetUserPassword(userId: string, newPassword: string): Promise<{ success: boolean; message?: string }> {
     try {
+      const token = authService.getToken();
+      if (!token) return { success: false, message: 'No authentication token found' };
+      
       const response = await fetch(`${this.baseUrl}/admin/users/${userId}/reset-password`, {
         method: 'POST',
-        credentials: 'include',
-        headers: this.getAuthHeaders(),
+        headers: { 
+          'Content-Type': 'application/json', 
+          'Authorization': `Bearer ${token}` 
+        },
         body: JSON.stringify({ newPassword })
       });
       
@@ -426,10 +475,12 @@ class AdminService {
 
   async getUserPasswordStatus(userId: string): Promise<{ success: boolean; data?: PasswordStatus; message?: string }> {
     try {
+      const token = authService.getToken();
+      if (!token) return { success: false, message: 'No authentication token found' };
+      
       const response = await fetch(`${this.baseUrl}/admin/users/${userId}/password-status`, {
         method: 'GET',
-        credentials: 'include',
-        headers: this.getAuthHeaders()
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       
       const result = await response.json();

@@ -104,7 +104,11 @@ if (typeof document !== 'undefined') {
 }
 
 // API Configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || (
+  (typeof window !== 'undefined' && window.location.hostname === 'localhost')
+    ? 'http://localhost:5000/api'
+    : 'https://ascendskills.onrender.com/api'
+)).replace(/\/$/, '');
 
 interface Question {
   id: string;
@@ -805,11 +809,12 @@ function InterviewContent() {
     voiceDetectedRef.current = false;
     
     try {
+      const authToken = getAuthTokenString();
       const response = await fetch(`${API_BASE_URL}/interview/ai/text-to-speech`, {
         method: 'POST',
-        credentials: 'include',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
         },
         body: JSON.stringify({ text: questionText })
       });
@@ -959,9 +964,9 @@ function InterviewContent() {
         // Load existing interview
         const response = await fetch(`${API_BASE_URL}/interview/${interviewId}`, {
           method: 'GET',
-          credentials: 'include',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
           }
         });
 
@@ -976,9 +981,9 @@ function InterviewContent() {
         // Start new interview (fallback)
         const response = await fetch(`${API_BASE_URL}/interview/ai/start`, {
         method: 'POST',
-        credentials: 'include',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
         },
         body: JSON.stringify({
           type: 'behavioral',
@@ -1079,9 +1084,12 @@ function InterviewContent() {
       formData.append('image', blob, 'frame.jpg');
       
       try {
+        const authToken = getAuthTokenString();
         const response = await fetch(`${API_BASE_URL}/interview/ai/${interviewConfig.interviewId}/monitor`, {
           method: 'POST',
-          credentials: 'include',
+          headers: {
+            'Authorization': `Bearer ${authToken}`
+          },
           body: formData
         });
         
@@ -1131,6 +1139,7 @@ function InterviewContent() {
       }
       formData.append('textResponse', responseText);
       
+      const authToken = getAuthTokenString();
       // Determine correct endpoint with safety checks for follow-ups
       let endpoint = `${API_BASE_URL}/interview/ai/${interviewConfig.interviewId}/submit/${currentQuestionIndex}`;
       if (isFollowUpMode) {
@@ -1145,7 +1154,9 @@ function InterviewContent() {
       
       const response_api = await fetch(endpoint, {
         method: 'POST',
-        credentials: 'include',
+        headers: {
+          'Authorization': `Bearer ${authToken}`
+        },
         body: formData
       });
       
@@ -1273,11 +1284,12 @@ function InterviewContent() {
 
   const generateAIResponseAnalysis = async (transcription: string, question: string, questionType: string) => {
     try {
+      const authToken = getAuthTokenString();
       const response = await fetch(`${API_BASE_URL}/interview/ai/analyze-response`, {
         method: 'POST',
-        credentials: 'include',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
         },
         body: JSON.stringify({ transcription, question, questionType })
       });
@@ -1345,11 +1357,12 @@ function InterviewContent() {
     console.log('🎯 All questions completed. Generating final assessment...');
     
     try {
+      const authToken = getAuthTokenString();
       const response = await fetch(`${API_BASE_URL}/interview/ai/${interviewConfig.interviewId}/assessment`, {
         method: 'POST',
-        credentials: 'include',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`
         }
       });
       

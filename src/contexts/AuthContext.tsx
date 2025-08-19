@@ -24,7 +24,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; message: string }>;
   signup: (userData: any) => Promise<{ success: boolean; message: string }>;
-  logout: () => Promise<void>;
+  logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -44,37 +44,51 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const DEFAULT_API = (typeof window !== 'undefined' && window.location.hostname === 'localhost')
+    ? 'http://localhost:5000/api'
+    : 'https://ascendskills.onrender.com/api';
+  const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || DEFAULT_API).replace(/\/$/, '');
 
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        // Always attempt to fetch profile using cookies (source of truth)
-        const response = await fetch('https://ascendskills.onrender.com/api/auth/profile', {
-          method: 'GET',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
+        // Check if user is authenticated
+        const token = authService.getToken();
+        if (token && authService.isAuthenticated()) {
+          // Fetch user info from backend
+          const response = await fetch(`${API_BASE_URL}/auth/profile`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            }
+          });
 
-        if (response.ok) {
-          const data = await response.json();
-          if (data.success && data.data) {
-            const backendUser: BackendUser = data.data;
-            setUser({
-              id: backendUser.id || backendUser._id || '',
-              name: backendUser.name,
-              email: backendUser.email,
-              role: backendUser.role
-            });
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.data) {
+              const backendUser: BackendUser = data.data;
+              setUser({
+                id: backendUser.id || backendUser._id || '',
+                name: backendUser.name,
+                email: backendUser.email,
+                role: backendUser.role
+              });
+            } else {
+              authService.logout();
+              setUser(null);
+            }
           } else {
+            authService.logout();
             setUser(null);
           }
         } else {
+          // No token found, user is not authenticated
           setUser(null);
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
+        authService.logout();
         setUser(null);
       } finally {
         setIsLoading(false);
@@ -121,8 +135,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const logout = async () => {
-    await authService.logout();
+  const logout = () => {
+    authService.logout();
     setUser(null);
   };
 

@@ -59,12 +59,25 @@ export default function AdminLogin() {
 
   const checkAdminStatus = async () => {
     try {
-      // Make a direct API call to check user profile using cookies
-      const response = await fetch('https://ascendskills.onrender.com/api/auth/profile', {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        setNotification({
+          type: 'error',
+          message: 'Authentication failed. Please try again.'
+        });
+        return;
+      }
+
+      // Make a direct API call to check user profile
+      const DEFAULT_API = (typeof window !== 'undefined' && window.location.hostname === 'localhost')
+        ? 'http://localhost:5000/api'
+        : 'https://ascendskills.onrender.com/api';
+      const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || DEFAULT_API).replace(/\/$/, '');
+      const response = await fetch(`${API_BASE_URL}/auth/profile`, {
         method: 'GET',
-        credentials: 'include',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         }
       });
 

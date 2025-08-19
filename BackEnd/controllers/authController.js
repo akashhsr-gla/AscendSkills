@@ -311,22 +311,15 @@ exports.login = async (req, res) => {
       suspiciousLogin
     });
 
-    // Set cookie options for cross-origin deployment
+    // Set cookie options
     const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      sameSite: 'strict',
       maxAge: rememberMe ? 7 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000 // 7 days or 24 hours
-      // Do NOT set domain to onrender.com when using subdomain app; let browser set correct host-only cookie
     };
 
     res.cookie('token', token, cookieOptions);
-    console.log('🍪 Set-Cookie token, options:', {
-      httpOnly: cookieOptions.httpOnly,
-      secure: cookieOptions.secure,
-      sameSite: cookieOptions.sameSite,
-      maxAge: cookieOptions.maxAge
-    });
 
     // Send response
     res.json({
@@ -383,12 +376,8 @@ exports.logout = async (req, res) => {
       ip: req.ip
     });
 
-    // Clear cookie with same options
-    res.clearCookie('token', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
-    });
+    // Clear cookie
+    res.clearCookie('token');
 
     res.json({
       success: true,

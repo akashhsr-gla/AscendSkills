@@ -1,6 +1,9 @@
 import { getAuthTokenString } from '@/utils/auth';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const DEFAULT_API = (typeof window !== 'undefined' && window.location.hostname === 'localhost')
+  ? 'http://localhost:5000/api'
+  : 'https://ascendskills.onrender.com/api';
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || DEFAULT_API).replace(/\/$/, '');
 
 export interface InterviewCategory {
   _id: string;
@@ -78,13 +81,16 @@ class InterviewPageService {
   private async makeRequest<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const url = `${API_BASE_URL}${endpoint}`;
     
+    // Get auth token
+    const token = getAuthTokenString();
+    
     try {
       const response = await fetch(url, {
         headers: {
           'Content-Type': 'application/json',
+          ...(token && { 'Authorization': `Bearer ${token}` }),
           ...options?.headers,
         },
-        credentials: 'include',
         ...options,
       });
 
@@ -204,6 +210,11 @@ class InterviewPageService {
       type: string;
     };
   }> {
+    const token = getAuthTokenString();
+    if (!token) {
+      throw new Error('Authentication required');
+    }
+
     const response = await this.makeRequest<{
       success: boolean;
       data: {
@@ -224,6 +235,7 @@ class InterviewPageService {
     }>('/interview/ai/start', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({

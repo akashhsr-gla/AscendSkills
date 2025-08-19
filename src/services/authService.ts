@@ -1,4 +1,7 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const DEFAULT_API = (typeof window !== 'undefined' && window.location.hostname === 'localhost')
+  ? 'http://localhost:5000/api'
+  : 'https://ascendskills.onrender.com/api';
+const resolvedBaseUrl = (process.env.NEXT_PUBLIC_API_URL || DEFAULT_API).replace(/\/$/, '');
 
 interface LoginData {
   email: string;
@@ -33,27 +36,30 @@ class AuthService {
   private token: string | null = null;
 
   constructor() {
-    // For cookie-based auth, we don't need to store token in localStorage
-    // The token will be automatically sent with requests via cookies
+    // Try to load token from localStorage
+    if (typeof window !== 'undefined') {
+      const storedToken = localStorage.getItem('auth_token');
+      if (storedToken) {
+        this.token = storedToken;
+      }
+    }
   }
 
   async login(credentials: LoginData): Promise<AuthResponse> {
     try {
-      // Use the real login endpoint with credentials (sets HttpOnly cookie)
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      // Use the debug login endpoint
+      const response = await fetch(`${resolvedBaseUrl}/auth/debug-login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Include cookies in the request
         body: JSON.stringify(credentials),
       });
 
       const data = await response.json();
 
       if (data.success && data.data?.token) {
-        // Store token in memory for immediate use (cookie will handle persistence)
-        this.token = data.data.token;
+        this.setToken(data.data.token);
         return data;
       } else {
         throw new Error(data.message || 'Login failed');
@@ -66,20 +72,18 @@ class AuthService {
 
   async signup(userData: SignupData): Promise<AuthResponse> {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+      const response = await fetch(`${resolvedBaseUrl}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        credentials: 'include', // Include cookies in the request
         body: JSON.stringify(userData),
       });
 
       const data = await response.json();
 
       if (data.success && data.data?.token) {
-        // Store token in memory for immediate use (cookie will handle persistence)
-        this.token = data.data.token;
+        this.setToken(data.data.token);
       }
 
       return data;
@@ -92,33 +96,29 @@ class AuthService {
     }
   }
 
-  async logout(): Promise<void> {
-    try {
-      // Call logout endpoint to clear server-side session and cookie
-      await fetch(`${API_BASE_URL}/auth/logout`, {
-        method: 'POST',
-        credentials: 'include',
-      });
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
-      // Clear local token
-      this.token = null;
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('auth_token'); // Clean up any existing localStorage
-      }
+  logout(): void {
+    this.token = null;
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token');
     }
   }
 
   getToken(): string | null {
-    // For cookie-based auth, we return the in-memory token
-    // The actual token is stored in HttpOnly cookies and sent automatically
+    // Always check localStorage to ensure we have the latest token
+    if (typeof window !== 'undefined') {
+      const storedToken = localStorage.getItem('auth_token');
+      if (storedToken && storedToken !== this.token) {
+        this.token = storedToken;
+      }
+    }
     return this.token;
   }
 
   setToken(token: string): void {
     this.token = token;
-    // Don't store in localStorage for security (use cookies instead)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('auth_token', token);
+    }
   }
 
   isAuthenticated(): boolean {
@@ -126,19 +126,24 @@ class AuthService {
   }
 
   async validateToken(): Promise<boolean> {
+    if (!this.token) {
+      return false;
+    }
+
     try {
-      // Validate token using cookies (no need to pass token in header)
-      const response = await fetch(`${API_BASE_URL}/auth/profile`, {
-        method: 'GET',
-        credentials: 'include',
+      // Try to refresh the token
+      const response = await fetch(`${resolvedBaseUrl}/auth/refresh-token`, {
+        method: 'POST',
         headers: {
+          'Authorization': `Bearer ${this.token}`,
           'Content-Type': 'application/json',
         },
       });
 
       if (response.ok) {
         const data = await response.json();
-        if (data.success && data.data) {
+        if (data.success && data.data?.token) {
+          this.setToken(data.data.token);
           return true;
         }
       }
@@ -152,10 +157,12 @@ class AuthService {
 
   async refreshToken(): Promise<boolean> {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
+      if (!this.token) return false;
+      
+      const response = await fetch(`${resolvedBaseUrl}/auth/refresh-token`, {
         method: 'POST',
-        credentials: 'include',
         headers: {
+          'Authorization': `Bearer ${this.token}`,
           'Content-Type': 'application/json',
         },
       });
@@ -163,7 +170,7 @@ class AuthService {
       if (response.ok) {
         const data = await response.json();
         if (data.success && data.data?.token) {
-          this.token = data.data.token;
+          this.setToken(data.data.token);
           return true;
         }
       }

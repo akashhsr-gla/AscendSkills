@@ -1,4 +1,7 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const DEFAULT_API = (typeof window !== 'undefined' && window.location.hostname === 'localhost')
+  ? 'http://localhost:5000/api'
+  : 'https://ascendskills.onrender.com/api';
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_URL || DEFAULT_API).replace(/\/$/, '');
 import { authService } from './authService';
 
 export interface UserSubscription {
@@ -40,8 +43,10 @@ export interface PlansResponse {
 
 class SubscriptionService {
   private getAuthHeaders(): HeadersInit {
+    const token = authService.getToken();
     return {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      ...(token && { Authorization: `Bearer ${token}` })
     };
   }
 
@@ -49,7 +54,6 @@ class SubscriptionService {
     try {
       const response = await fetch(`${API_BASE_URL}/auth/profile`, {
         method: 'GET',
-        credentials: 'include',
         headers: this.getAuthHeaders(),
       });
 
@@ -110,7 +114,6 @@ class SubscriptionService {
     try {
       const response = await fetch(`${API_BASE_URL}/subscriptions/order`, {
         method: 'POST',
-        credentials: 'include',
         headers: this.getAuthHeaders(),
         body: JSON.stringify({ planKey })
       });

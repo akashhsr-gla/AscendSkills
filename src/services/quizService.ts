@@ -72,15 +72,21 @@ export interface QuizStatistics {
 }
 
 class QuizService {
-  private baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+  private baseURL = (process.env.NEXT_PUBLIC_API_URL || (
+    (typeof window !== 'undefined' && window.location.hostname === 'localhost')
+      ? 'http://localhost:5000/api'
+      : 'https://ascendskills.onrender.com/api'
+  )).replace(/\/$/, '');
 
   private async makeRequest(endpoint: string, options: RequestInit = {}) {
+    const token = authService.getToken();
+    
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
         ...options.headers,
       },
-      credentials: 'include',
       ...options,
     };
 
@@ -357,6 +363,11 @@ class QuizService {
     sortOrder?: string;
   } = {}): Promise<{ success: boolean; data?: any; message?: string }> {
     try {
+      const token = authService.getToken();
+      if (!token) {
+        return { success: false, message: 'No authentication token found' };
+      }
+
       const queryParams = new URLSearchParams();
       Object.entries(params).forEach(([key, value]) => {
         if (value !== undefined && value !== '') {
@@ -366,9 +377,9 @@ class QuizService {
 
       const response = await fetch(`${this.baseURL.replace('/quiz', '')}/admin/quiz/questions?${queryParams}`, {
         method: 'GET',
-        credentials: 'include',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -387,11 +398,16 @@ class QuizService {
 
   async getAdminQuizQuestionById(id: string): Promise<{ success: boolean; data?: any; message?: string }> {
     try {
+      const token = authService.getToken();
+      if (!token) {
+        return { success: false, message: 'No authentication token found' };
+      }
+
       const response = await fetch(`${this.baseURL.replace('/quiz', '')}/admin/quiz/questions/${id}`, {
         method: 'GET',
-        credentials: 'include',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -410,11 +426,16 @@ class QuizService {
 
   async createAdminQuizQuestion(questionData: any): Promise<{ success: boolean; data?: any; message?: string }> {
     try {
+      const token = authService.getToken();
+      if (!token) {
+        return { success: false, message: 'No authentication token found' };
+      }
+
       const response = await fetch(`${this.baseURL.replace('/quiz', '')}/admin/quiz/questions`, {
         method: 'POST',
-        credentials: 'include',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(questionData)
       });
@@ -434,11 +455,16 @@ class QuizService {
 
   async updateAdminQuizQuestion(id: string, updateData: any): Promise<{ success: boolean; data?: any; message?: string }> {
     try {
+      const token = authService.getToken();
+      if (!token) {
+        return { success: false, message: 'No authentication token found' };
+      }
+
       const response = await fetch(`${this.baseURL.replace('/quiz', '')}/admin/quiz/questions/${id}`, {
         method: 'PATCH',
-        credentials: 'include',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(updateData)
       });
@@ -458,11 +484,16 @@ class QuizService {
 
   async deleteAdminQuizQuestion(id: string): Promise<{ success: boolean; message: string }> {
     try {
+      const token = authService.getToken();
+      if (!token) {
+        return { success: false, message: 'No authentication token found' };
+      }
+
       const response = await fetch(`${this.baseURL.replace('/quiz', '')}/admin/quiz/questions/${id}`, {
         method: 'DELETE',
-        credentials: 'include',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -481,11 +512,16 @@ class QuizService {
 
   async getAdminQuizStatistics(): Promise<{ success: boolean; data?: any; message?: string }> {
     try {
+      const token = authService.getToken();
+      if (!token) {
+        return { success: false, message: 'No authentication token found' };
+      }
+
       const response = await fetch(`${this.baseURL.replace('/quiz', '')}/admin/quiz/statistics`, {
         method: 'GET',
-        credentials: 'include',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         }
       });
 

@@ -128,18 +128,23 @@ class JobService {
   private baseURL: string;
 
   constructor() {
-    this.baseURL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+    this.baseURL = (process.env.NEXT_PUBLIC_API_URL || (
+      (typeof window !== 'undefined' && window.location.hostname === 'localhost')
+        ? 'http://localhost:5000/api'
+        : 'https://ascendskills.onrender.com/api'
+    )).replace(/\/$/, '');
   }
 
   private async makeRequest<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const url = `${this.baseURL}/jobs${endpoint}`;
+    const token = getAuthTokenString();
     
     const config: RequestInit = {
       headers: {
         'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
         ...options?.headers,
       },
-      credentials: 'include',
       ...options,
     };
 

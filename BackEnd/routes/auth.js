@@ -67,21 +67,6 @@ router.post('/debug-login', async (req, res) => {
 
     console.log('✅ Login successful, token generated');
 
-    // Also set HttpOnly cookie here for debug flow to behave like real login
-    const cookieOptions = {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-    };
-    res.cookie('token', token, cookieOptions);
-    console.log('🍪 [debug-login] Set-Cookie token, options:', {
-      httpOnly: cookieOptions.httpOnly,
-      secure: cookieOptions.secure,
-      sameSite: cookieOptions.sameSite,
-      maxAge: cookieOptions.maxAge
-    });
-
     res.json({
       success: true,
       message: 'Login successful',
