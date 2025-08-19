@@ -1,4 +1,4 @@
-import { getAuthTokenString } from '@/utils/auth';
+// Cookie-based auth: no explicit token import needed
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 

@@ -1,13 +1,18 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 require('dotenv').config();
 
 const app = express();
 
 // Middleware
+// Trust proxy so secure cookies work behind Render/Proxy
+app.set('trust proxy', 1);
+
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(cookieParser());
 app.use(cors({
   origin: [
     'http://localhost:3000',
@@ -16,6 +21,15 @@ app.use(cors({
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
+
+// Handle preflight for all routes
+app.options('*', cors({
+  origin: [
+    'http://localhost:3000',
+    'https://ascend-skills.vercel.app'
+  ],
+  credentials: true
 }));
 
 // MongoDB connection
