@@ -1073,17 +1073,17 @@ const DashboardPage = () => {
                             Full Name *
                           </label>
                           {isEditingProfile ? (
-                            <input
-                              type="text"
-                              value={profileData.fullName}
-                              onChange={(e) => handleProfileChange('fullName', e.target.value)}
-                              placeholder="Enter your full name"
+                          <input
+                            type="text"
+                            value={profileData.fullName}
+                            onChange={(e) => handleProfileChange('fullName', e.target.value)}
+                            placeholder="Enter your full name"
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            />
+                          />
                           ) : (
                             <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900">
                               {profileData.fullName || 'Not provided'}
-                            </div>
+                        </div>
                           )}
                         </div>
 
@@ -1092,17 +1092,17 @@ const DashboardPage = () => {
                             Email Address *
                           </label>
                           {isEditingProfile ? (
-                            <input
-                              type="email"
-                              value={profileData.email}
-                              onChange={(e) => handleProfileChange('email', e.target.value)}
+                          <input
+                            type="email"
+                            value={profileData.email}
+                            onChange={(e) => handleProfileChange('email', e.target.value)}
                               placeholder="Enter your email address"
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            />
+                          />
                           ) : (
                             <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900">
                               {profileData.email || 'Not provided'}
-                            </div>
+                        </div>
                           )}
                         </div>
 
@@ -1111,13 +1111,13 @@ const DashboardPage = () => {
                             Phone Number *
                           </label>
                           {isEditingProfile ? (
-                            <input
-                              type="tel"
-                              value={profileData.phone}
-                              onChange={(e) => handleProfileChange('phone', e.target.value)}
-                              placeholder="Enter your phone number"
+                          <input
+                            type="tel"
+                            value={profileData.phone}
+                            onChange={(e) => handleProfileChange('phone', e.target.value)}
+                            placeholder="Enter your phone number"
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            />
+                          />
                           ) : (
                             <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900">
                               {profileData.phone || 'Not provided'}
@@ -1136,17 +1136,17 @@ const DashboardPage = () => {
                             College/University Name *
                           </label>
                           {isEditingProfile ? (
-                            <input
-                              type="text"
-                              value={profileData.college}
-                              onChange={(e) => handleProfileChange('college', e.target.value)}
+                          <input
+                            type="text"
+                            value={profileData.college}
+                            onChange={(e) => handleProfileChange('college', e.target.value)}
                               placeholder="Enter your college/university name"
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            />
+                          />
                           ) : (
                             <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900">
                               {profileData.college || 'Not provided'}
-                            </div>
+                        </div>
                           )}
                         </div>
 
@@ -1155,18 +1155,18 @@ const DashboardPage = () => {
                             Degree *
                           </label>
                           {isEditingProfile ? (
-                            <select
-                              value={profileData.degree}
-                              onChange={(e) => handleProfileChange('degree', e.target.value)}
+                          <select 
+                            value={profileData.degree}
+                            onChange={(e) => handleProfileChange('degree', e.target.value)}
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            >
+                          >
                               <option value="">Select Degree</option>
-                              <option value="bachelor">Bachelor's Degree</option>
-                              <option value="master">Master's Degree</option>
-                              <option value="phd">PhD</option>
-                              <option value="diploma">Diploma</option>
-                              <option value="other">Other</option>
-                            </select>
+                            <option value="bachelor">Bachelor's Degree</option>
+                            <option value="master">Master's Degree</option>
+                            <option value="phd">PhD</option>
+                            <option value="diploma">Diploma</option>
+                            <option value="other">Other</option>
+                          </select>
                           ) : (
                             <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900">
                               {profileData.degree === 'bachelor' ? "Bachelor's Degree" : 
@@ -1174,7 +1174,7 @@ const DashboardPage = () => {
                                profileData.degree === 'phd' ? 'PhD' : 
                                profileData.degree === 'diploma' ? 'Diploma' : 
                                profileData.degree === 'other' ? 'Other' : 'Not provided'}
-                            </div>
+                        </div>
                           )}
                         </div>
 
@@ -1183,21 +1183,21 @@ const DashboardPage = () => {
                             Field of Study
                           </label>
                           {isEditingProfile ? (
-                            <input
-                              type="text"
-                              value={profileData.fieldOfStudy}
-                              onChange={(e) => handleProfileChange('fieldOfStudy', e.target.value)}
-                              placeholder="Enter your field of study"
+                          <input
+                            type="text"
+                            value={profileData.fieldOfStudy}
+                            onChange={(e) => handleProfileChange('fieldOfStudy', e.target.value)}
+                            placeholder="Enter your field of study"
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            />
+                          />
                           ) : (
                             <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900">
                               {profileData.fieldOfStudy || 'Not provided'}
-                            </div>
-                          )}
                         </div>
+                          )}
+                    </div>
 
-                        <div>
+                    <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
                             Year of Completion *
                           </label>
