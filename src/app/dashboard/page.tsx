@@ -215,6 +215,8 @@ const DashboardPage = () => {
           type: 'success',
           message: response.message || 'Profile updated successfully!'
         });
+        // Return to read-only mode after successful save
+        setIsEditingProfile(false);
       } else {
         setNotification({
           type: 'error',
