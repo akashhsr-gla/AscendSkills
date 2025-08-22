@@ -1020,8 +1020,16 @@ function InterviewContent() {
   // Initialize camera
   const initializeCamera = async () => {
     try {
+      console.log('🎥 Initializing camera...');
+      
+      // Check if mediaDevices is available
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Camera access not supported in this browser');
+      }
+      
       let stream: MediaStream;
       try {
+        console.log('🎥 Requesting camera access with audio...');
         stream = await navigator.mediaDevices.getUserMedia({
           video: { 
             width: { ideal: 640 }, 
@@ -1034,7 +1042,9 @@ function InterviewContent() {
             autoGainControl: true
           }
         });
-      } catch {
+        console.log('🎥 Camera access granted with audio');
+      } catch (audioError) {
+        console.log('🎥 Camera access with audio failed, trying video only:', audioError);
         stream = await navigator.mediaDevices.getUserMedia({
           video: { 
             width: { ideal: 640 }, 
@@ -1042,18 +1052,49 @@ function InterviewContent() {
             facingMode: 'user' 
           }
         });
+        console.log('🎥 Camera access granted (video only)');
       }
       
       streamRef.current = stream;
+      console.log('🎥 Stream stored in ref');
       
       if (videoRef.current) {
+        console.log('🎥 Setting video source...');
         videoRef.current.srcObject = stream;
-        await videoRef.current.play();
+        
+        // Add event listeners for debugging
+        videoRef.current.onloadedmetadata = () => {
+          console.log('🎥 Video metadata loaded');
+        };
+        
+        videoRef.current.oncanplay = () => {
+          console.log('🎥 Video can play');
+        };
+        
+        videoRef.current.onplaying = () => {
+          console.log('🎥 Video is playing');
+        };
+        
+        videoRef.current.onerror = (e) => {
+          console.error('🎥 Video error:', e);
+        };
+        
+        try {
+          await videoRef.current.play();
+          console.log('🎥 Video play started successfully');
+        } catch (playError) {
+          console.error('🎥 Video play failed:', playError);
+          // Try playing without waiting
+          videoRef.current.play().catch(console.error);
+        }
+      } else {
+        console.error('🎥 Video ref is null');
       }
       
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      setError(`Failed to access camera: ${errorMessage}`);
+      console.error('🎥 Camera initialization failed:', error);
+      setError(`Failed to access camera: ${errorMessage}. Please ensure you have granted camera permissions and no other application is using your camera.`);
     }
   };
 
@@ -1424,6 +1465,42 @@ function InterviewContent() {
     }
   }, [isFollowUpMode, followUpQuestions, currentFollowUpIndex]);
 
+  // Additional camera initialization effect to ensure proper setup
+  useEffect(() => {
+    let mounted = true;
+    
+    const setupCamera = async () => {
+      if (!mounted || !videoRef.current) return;
+      
+      // Wait a bit for the component to fully mount
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      if (!mounted) return;
+      
+      // If we already have a stream but video is not playing, try to reconnect
+      if (streamRef.current && videoRef.current && videoRef.current.paused) {
+        try {
+          console.log('🎥 Re-applying existing stream to video element');
+          videoRef.current.srcObject = streamRef.current;
+          await videoRef.current.play();
+        } catch (error) {
+          console.log('🎥 Failed to re-apply stream, will reinitialize');
+          // Stream might be stale, clean up and reinitialize
+          if (streamRef.current) {
+            streamRef.current.getTracks().forEach(track => track.stop());
+            streamRef.current = null;
+          }
+        }
+      }
+    };
+    
+    setupCamera();
+    
+    return () => {
+      mounted = false;
+    };
+  }, [videoRef.current]); // Trigger when video ref becomes available
+
 
 
   if (loading) {
@@ -1726,9 +1803,36 @@ function InterviewContent() {
                 autoPlay
                 muted
                 playsInline
-                className="w-full h-full object-cover"
+                controls={false}
+                width="640"
+                height="480"
+                className="w-full h-full object-cover transform scale-x-[-1]"
+                style={{ 
+                  backgroundColor: '#000',
+                  objectFit: 'cover'
+                }}
+                onError={(e) => {
+                  console.error('🎥 Video element error:', e);
+                }}
+                onLoadStart={() => {
+                  console.log('🎥 Video load start');
+                }}
+                onLoadedData={() => {
+                  console.log('🎥 Video data loaded');
+                }}
               />
               <canvas ref={canvasRef} className="hidden" />
+              
+              {/* Camera status overlay */}
+              {!streamRef.current && !error && (
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-800">
+                  <div className="text-center text-white">
+                    <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <p className="text-lg font-semibold">Initializing Camera...</p>
+                    <p className="text-sm text-gray-300 mt-2">Please allow camera access when prompted</p>
+                  </div>
+                </div>
+              )}
               
               {aiProcessing && (
                 <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">

@@ -463,7 +463,7 @@ const DashboardPage = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-xl lg:text-2xl font-bold text-gray-900">Dashboard</h1>
-                <p className="text-gray-600 text-sm lg:text-base">Welcome back, {userProfile.name}!</p>
+                <p className="text-gray-600 text-sm lg:text-base">Hello {userProfile.name}!</p>
               </div>
             </div>
           </div>
