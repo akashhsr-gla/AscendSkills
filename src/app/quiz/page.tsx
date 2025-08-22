@@ -18,8 +18,6 @@ import {
   Timer,
   Users,
   Download,
-  Share2,
-  RotateCcw,
   Eye,
   Zap,
   Code,
@@ -672,14 +670,6 @@ const QuizPage = () => {
               >
                 <Download className="w-5 h-5 mr-2" />
                 Download Report
-              </button>
-              <button className="flex items-center px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors">
-                <Share2 className="w-5 h-5 mr-2" />
-                Share Result
-              </button>
-              <button className="flex items-center px-6 py-3 border border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50 transition-colors">
-                <RotateCcw className="w-5 h-5 mr-2" />
-                Retake Quiz
               </button>
             </div>
           </div>

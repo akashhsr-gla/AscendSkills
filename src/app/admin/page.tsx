@@ -32,7 +32,7 @@ import { useRouter } from 'next/navigation';
 export default function AdminDashboard() {
   const [tab, setTab] = useState<'dashboard'|'users'|'interviews'|'quizzes'|'jobs'|'subscriptions'>('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const router = useRouter();
 
   const menuItems = [
@@ -56,6 +56,10 @@ export default function AdminDashboard() {
       return;
     }
   }, [user, router]);
+
+  const handleLogout = () => {
+    logout('/admin/login');
+  };
 
   // Show loading while checking authentication
   if (!user || user.role !== 'admin') {
@@ -132,7 +136,10 @@ export default function AdminDashboard() {
 
           {/* Logout */}
           <div className="p-4 border-t border-gray-200">
-            <button className="w-full flex items-center px-3 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-all">
+            <button 
+              onClick={handleLogout}
+              className="w-full flex items-center px-3 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-all"
+            >
               <LogOut className={`w-5 h-5 ${sidebarOpen ? 'mr-3' : 'mx-auto'}`} />
               {sidebarOpen && <span className="font-medium">Logout</span>}
             </button>

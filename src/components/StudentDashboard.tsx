@@ -44,7 +44,7 @@ const StudentDashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   const userProfile = {
     name: user?.name || 'Guest User',
@@ -314,7 +314,10 @@ const StudentDashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                       Edit Profile
                     </button>
                       <hr className="my-2 border-gray-200" />
-                      <button className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center text-red-600">
+                      <button 
+                        onClick={() => logout('/')}
+                        className="w-full px-4 py-2 text-left hover:bg-gray-100 flex items-center text-red-600"
+                      >
                       <LogOut className="w-4 h-4 mr-2" />
                       Sign Out
                     </button>
@@ -376,7 +379,7 @@ const StudentDashboard: React.FC<DashboardProps> = ({ onNavigate }) => {
                  sidebarItems.find(item => item.id === activeSection)?.label || 'Dashboard'}
               </h1>
                 <p className="text-gray-600">
-                Welcome back, {userProfile.name}! Ready to continue learning?
+                Hello, {userProfile.name}! Ready to learn with Ascend Skills?
               </p>
               </div>
               

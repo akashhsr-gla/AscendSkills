@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authService } from '@/services/authService';
+import { useRouter } from 'next/navigation';
 
 interface User {
   id: string;
@@ -24,7 +25,7 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; message: string }>;
   signup: (userData: any) => Promise<{ success: boolean; message: string }>;
-  logout: () => void;
+  logout: (redirectTo?: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -44,6 +45,7 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
   const DEFAULT_API = (typeof window !== 'undefined' && window.location.hostname === 'localhost')
     ? 'http://localhost:5000/api'
     : 'https://ascendskills.onrender.com/api';
@@ -135,9 +137,20 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const logout = () => {
+  const logout = (redirectTo?: string) => {
     authService.logout();
     setUser(null);
+    
+    // Handle redirection based on current user role or specified redirect path
+    if (redirectTo) {
+      router.push(redirectTo);
+    } else if (user?.role === 'admin') {
+      // If admin user, redirect to admin login
+      router.push('/admin/login');
+    } else {
+      // If regular user, redirect to home page
+      router.push('/');
+    }
   };
 
   const value: AuthContextType = {

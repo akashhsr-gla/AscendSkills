@@ -9,6 +9,14 @@ const Header = () => {
   const [isOpen, setIsOpen] = useState(false);
   const { user, isAuthenticated, logout } = useAuth();
 
+  const handleLogout = () => {
+    if (user?.role === 'admin') {
+      logout('/admin/login');
+    } else {
+      logout('/');
+    }
+  };
+
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -62,7 +70,7 @@ const Header = () => {
                   <span className="font-medium">{user?.name}</span>
                 </a>
                 <button 
-                  onClick={logout}
+                  onClick={handleLogout}
                   className="flex items-center space-x-2 text-gray-700 hover:text-red-500 font-medium transition-colors"
                 >
                   <LogOut className="w-4 h-4" />
@@ -126,12 +134,12 @@ const Header = () => {
                       <span>{user?.name}</span>
                     </a>
                     <button 
-                      onClick={logout}
+                      onClick={handleLogout}
                       className="w-full flex items-center space-x-2 text-gray-700 hover:text-red-500 font-medium px-3 py-2"
                     >
                       <LogOut className="w-4 h-4" />
                       <span>Logout</span>
-                    </button>
+                </button>
                   </>
                 ) : (
                   <>
