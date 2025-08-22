@@ -7,7 +7,6 @@ const commonValidations = {
   email: body('email')
     .isEmail()
     .withMessage('Please provide a valid email')
-    .normalizeEmail()
     .toLowerCase(),
   password: body('password')
     .isLength({ min: 8 })
@@ -118,7 +117,6 @@ const userValidations = {
       .optional()
       .isEmail()
       .withMessage('Please provide a valid email')
-      .normalizeEmail()
       .toLowerCase(),
     body('role')
       .optional()
@@ -424,7 +422,6 @@ const companyValidations = {
     body('contact.email')
       .isEmail()
       .withMessage('Please provide a valid email')
-      .normalizeEmail()
       .toLowerCase(),
     body('contact.phone')
       .optional()
