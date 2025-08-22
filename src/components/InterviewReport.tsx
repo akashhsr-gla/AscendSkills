@@ -20,7 +20,7 @@ import {
   Video
 } from "lucide-react";
 import DetailedInterviewModal from "./DetailedInterviewModal";
-import { downloadElementAsPDF } from "@/utils/pdf";
+import { downloadInterviewReport } from "@/utils/pdf";
 import { interviewService, DetailedInterviewReport } from "@/services/interviewService";
 
 // Video recording interface
@@ -209,10 +209,27 @@ export default function InterviewReport({
     }
 
     const fileName = `AscendSkills_Interview_Report${interviewId ? `_${interviewId}` : ''}.pdf`;
-    await downloadElementAsPDF(combined, fileName, {
+    
+    // Create interview data for the new PDF system
+    const interviewData = {
       title: "Interview Assessment Report",
-      fileName,
-    });
+      userName: 'User', // This should come from user context
+      date: new Date().toLocaleDateString(),
+      duration: 'N/A', // Duration not available in current report structure
+      scores: {
+        communication: report.breakdown?.communication || 0,
+        technical: report.breakdown?.technical || 0,
+        problemSolving: report.breakdown?.problemSolving || 0,
+        confidence: report.breakdown?.confidence || 0,
+        overall: report.overallScore || 0
+      },
+      questions: [], // Questions not available in current report structure
+      strengths: report.strengths || [],
+      improvements: report.improvements || [],
+      recommendations: report.recommendations || []
+    };
+    
+    await downloadInterviewReport(interviewData, fileName);
   }, [interviewId]);
 
   const handleVideoDownload = useCallback(() => {

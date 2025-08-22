@@ -442,7 +442,17 @@ const AdminUserManagement: React.FC = () => {
                           </div>
                           <div className="ml-4">
                             <div className="text-sm font-medium text-gray-900">{user.name}</div>
-                            <div className="text-sm text-gray-500">{user.email}</div>
+                            <div className="text-sm text-gray-500">
+                              {user.email}
+                              {/* Debug info */}
+                              <div className="text-xs text-gray-400 mt-1">
+                                Raw: "{user.email}" | Type: {typeof user.email} | Length: {user.email?.length}
+                              </div>
+                              {/* Test with hardcoded email to see if it's a display issue */}
+                              <div className="text-xs text-gray-400 mt-1">
+                                Test: test.ex@gmail.com
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </td>

@@ -56,7 +56,7 @@ import QuizResults from '@/components/QuizResults';
 import CodingInterface from '@/components/CodingInterface';
 import { quizService, QuizQuestion } from '@/services/quizService';
 import { calculateFrontendQuizResult } from '@/utils/quizResultCalculator';
-import { downloadElementAsPDF } from '@/utils/pdf';
+import { downloadQuizReport } from '@/utils/pdf';
 import { isAuthenticated } from '@/utils/auth';
 import { useRouter } from 'next/navigation';
 import { subscriptionService, type UserSubscription, type SubscriptionPlan } from '@/services/subscriptionService';
@@ -561,14 +561,49 @@ const QuizPage = () => {
     const quizResult = calculateFrontendQuizResult(quizQuestions, userAnswers, actualTimeTaken);
     const { correctAnswers, score, performanceByType, timeTaken, averageTimePerQuestion } = quizResult;
 
-    const handleDownload = useCallback(async () => {
-      if (!containerRef.current) return;
-      const fileName = `AscendSkills_Quiz_Results_${selectedQuiz?.title?.replace(/\s+/g, '_') || 'Quiz'}.pdf`;
-      await downloadElementAsPDF(containerRef.current, fileName, {
-        title: `Quiz Results - ${selectedQuiz?.title || 'Quiz'}`,
-        fileName,
-      });
-    }, [selectedQuiz?.title]);
+      const handleDownload = useCallback(async () => {
+    if (!containerRef.current) return;
+    
+    // Create quiz data for the new PDF system
+    const quizData = {
+      title: selectedQuiz?.title || 'Quiz',
+      userName: 'User', // This should come from user context
+      date: new Date().toLocaleDateString(),
+      totalQuestions: quizQuestions.length,
+      correctAnswers,
+      score,
+      timeSpent: `${Math.floor(timeTaken / 60)} min ${timeTaken % 60} sec`,
+      category: selectedQuiz?.category || 'General',
+      difficulty: selectedQuiz?.difficulty || 'Medium',
+              questions: quizQuestions.map((q, i) => ({
+          question: q.question,
+          userAnswer: String(userAnswers[i] || ''),
+          correctAnswer: String(q.correctAnswer || ''),
+          isCorrect: String(userAnswers[i] || '') === String(q.correctAnswer || ''),
+          explanation: q.explanation || undefined
+        })),
+      breakdown: {
+        'MCQ Questions': {
+          correct: performanceByType.mcq.correct,
+          total: performanceByType.mcq.total,
+          percentage: performanceByType.mcq.total > 0 ? Math.round((performanceByType.mcq.correct / performanceByType.mcq.total) * 100) : 0
+        },
+        'Fill in the Blanks': {
+          correct: performanceByType.fill.correct,
+          total: performanceByType.fill.total,
+          percentage: performanceByType.fill.total > 0 ? Math.round((performanceByType.fill.correct / performanceByType.fill.total) * 100) : 0
+        },
+        'Coding Questions': {
+          correct: performanceByType.coding.correct,
+          total: performanceByType.coding.total,
+          percentage: performanceByType.coding.total > 0 ? Math.round((performanceByType.coding.correct / performanceByType.coding.total) * 100) : 0
+        }
+      }
+    };
+    
+    const fileName = `AscendSkills_Quiz_Results_${selectedQuiz?.title?.replace(/\s+/g, '_') || 'Quiz'}.pdf`;
+    await downloadQuizReport(quizData, fileName);
+  }, [selectedQuiz?.title, quizQuestions, userAnswers, correctAnswers, score, timeTaken, performanceByType]);
 
     return (
       <div ref={containerRef} className="min-h-screen bg-gray-50">
