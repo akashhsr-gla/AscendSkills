@@ -193,7 +193,6 @@ function InterviewContent() {
   const [hasTtsFinished, setHasTtsFinished] = useState(false);
   const [isCountdownActive, setIsCountdownActive] = useState(false);
   const [countdownSeconds, setCountdownSeconds] = useState(30);
-  const [expectedDuration, setExpectedDuration] = useState(30); // Duration from backend
   const countdownIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const voiceDetectedRef = useRef<boolean>(false);
   const autoSubmitInProgressRef = useRef<boolean>(false);
@@ -518,7 +517,7 @@ function InterviewContent() {
 
   const startCountdown = useCallback(() => {
     if (isCountdownActiveRef.current) return;
-    setCountdownSeconds(expectedDuration);
+    setCountdownSeconds(30);
     setIsCountdownActive(true);
     isCountdownActiveRef.current = true;
     if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
@@ -538,15 +537,15 @@ function InterviewContent() {
         return prev - 1;
       });
     }, 1000);
-  }, [handleAutoSubmit, expectedDuration]);
+  }, [handleAutoSubmit]);
 
   const resetAutoFlowState = useCallback(() => {
     setHasTtsFinished(false);
     voiceDetectedRef.current = false;
     autoSubmitInProgressRef.current = false;
     stopCountdown();
-    setCountdownSeconds(expectedDuration);
-  }, [stopCountdown, expectedDuration]);
+    setCountdownSeconds(30);
+  }, [stopCountdown]);
 
   const resetQuestionInterface = () => {
     setTranscription('');
@@ -575,9 +574,6 @@ function InterviewContent() {
     
     // Step 3: Reset interface
     resetQuestionInterface();
-    
-    // Step 4: Update expected duration for new question
-    setTimeout(() => updateExpectedDuration(), 100);
   };
 
   const transitionToNextFollowUp = async () => {
@@ -591,9 +587,6 @@ function InterviewContent() {
     
     // Step 3: Reset interface (same as other transitions)
     resetQuestionInterface();
-    
-    // Step 4: Update expected duration for follow-up question (30 seconds)
-    setTimeout(() => updateExpectedDuration(), 100);
   };
 
   // Update transitionToFollowUpMode to reset follow-up index
@@ -609,29 +602,7 @@ function InterviewContent() {
     
     // Step 3: Reset interface
     resetQuestionInterface();
-    
-    // Step 4: Update expected duration for follow-up question (30 seconds)
-    setTimeout(() => updateExpectedDuration(), 100);
   };
-
-  // Function to update expected duration based on current question
-  const updateExpectedDuration = useCallback(() => {
-    if (isFollowUpMode && followUpQuestions[currentFollowUpIndex]) {
-      // For follow-up questions, use 30 seconds as fallback
-      setExpectedDuration(30);
-      console.log('🎯 Follow-up question duration set to 30 seconds');
-    } else if (questions[currentQuestionIndex]) {
-      // For main questions, use the expectedDuration from the question or fallback to 30
-      const questionDuration = questions[currentQuestionIndex].expectedDuration;
-      const duration = questionDuration && questionDuration > 0 ? questionDuration : 30;
-      setExpectedDuration(duration);
-      console.log('🎯 Main question duration set to:', duration, 'seconds (from backend:', questionDuration, ')');
-    } else {
-      // Fallback to 30 seconds
-      setExpectedDuration(30);
-      console.log('🎯 Duration fallback to 30 seconds');
-    }
-  }, [isFollowUpMode, currentFollowUpIndex, followUpQuestions, currentQuestionIndex, questions]);
 
   // UNIFIED QUESTION TRANSITION SYSTEM - Update this function
   const handleQuestionTransition = async (result: any) => {
@@ -1310,9 +1281,6 @@ function InterviewContent() {
       currentAudio.currentTime = 0;
     }
     // Note: readQuestions is not cleared here to prevent re-reading the same questions
-    
-    // Update expected duration for the new question
-    setTimeout(() => updateExpectedDuration(), 100);
   };
 
 
@@ -1330,9 +1298,6 @@ function InterviewContent() {
       currentAudio.currentTime = 0;
     }
     // readQuestions is preserved to prevent skipping first follow-up
-    
-    // Update expected duration for the new question
-    setTimeout(() => updateExpectedDuration(), 100);
   };
 
   // Manual progression to next follow-up question
@@ -1489,11 +1454,6 @@ function InterviewContent() {
       }
     }
   }, [questions, currentQuestionIndex, followUpQuestions, currentFollowUpIndex, isFollowUpMode, isReadingQuestion, ttsRequestInProgress, readQuestion]);
-
-  // Update expected duration when questions or question index changes
-  useEffect(() => {
-    updateExpectedDuration();
-  }, [updateExpectedDuration]);
 
   // Add this useEffect to handle follow-up indexing
   useEffect(() => {
@@ -1974,9 +1934,7 @@ function InterviewContent() {
               {isCountdownActive && (
                 <div className="flex items-center gap-2 px-3 py-2 rounded-xl border bg-amber-50 text-amber-800 border-amber-200">
                   <Clock className="w-4 h-4" />
-                  <span className="text-sm font-medium">
-                    Auto submit in {countdownSeconds}s (Expected: {expectedDuration}s)
-                  </span>
+                  <span className="text-sm font-medium">Auto submit in {countdownSeconds}s</span>
                 </div>
               )}
               {!isRecording && !aiProcessing && (
