@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Home, BookOpen, Video, User, Bell, Calendar, Star, CheckCircle, Flame, Award, ArrowRight, ArrowLeft, CreditCard, Check, X, Menu } from 'lucide-react';
+import { Home, BookOpen, Video, User, Bell, Calendar, Star, CheckCircle, Flame, Award, ArrowRight, ArrowLeft, CreditCard, Check, X, Menu, Edit, Save } from 'lucide-react';
 import Header from '@/components/Header';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
@@ -330,6 +330,8 @@ const DashboardPage = () => {
     { title: 'Interviews Given', value: stats.interviews.toString(), icon: Video, color: 'bg-red-500' },
     { title: 'Quizzes Completed', value: stats.quizzes.toString(), icon: CheckCircle, color: 'bg-green-500' }
   ];
+
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -1016,42 +1018,109 @@ const DashboardPage = () => {
 
             {activeSection === 'profile' && (
               <div className="bg-white rounded-xl lg:rounded-2xl p-4 lg:p-6 shadow-lg border border-gray-100">
-                <h3 className="text-lg lg:text-xl font-bold text-gray-900 mb-4 lg:mb-6">Profile Settings</h3>
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl lg:text-2xl font-bold text-gray-900">Profile Information</h3>
+                  {!isEditingProfile ? (
+                    <button
+                      onClick={() => setIsEditingProfile(true)}
+                      className="flex items-center px-4 py-2 bg-gradient-primary text-white rounded-lg hover:shadow-lg transition-all duration-300"
+                    >
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit Profile
+                    </button>
+                  ) : (
+                    <div className="flex space-x-3">
+                      <button
+                        onClick={() => {
+                          setIsEditingProfile(false);
+                          // Reset to original data
+                          setProfileData({
+                            fullName: user?.name || '',
+                            email: user?.email || '',
+                            phone: '+1 (555) 123-4567',
+                            college: 'Stanford University',
+                            degree: 'bachelor',
+                            fieldOfStudy: 'Computer Science',
+                            yearOfCompletion: '2024'
+                          });
+                        }}
+                        className="flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                      >
+                        <X className="w-4 h-4 mr-2" />
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSaveProfile}
+                        className="flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                      >
+                        <Save className="w-4 h-4 mr-2" />
+                        Save Changes
+                      </button>
+                    </div>
+                  )}
+                </div>
+
                 <div className="w-full">
                   {/* Personal Information */}
                   <div className="space-y-4 lg:space-y-6 mb-6 lg:mb-8">
                     <div>
                       <h4 className="text-base lg:text-lg font-semibold text-gray-900 mb-3 lg:mb-4">Personal Information</h4>
-                      <div className="space-y-3 lg:space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
                         <div>
-                          <label className="block text-sm font-medium text-gray-900 mb-1">Full Name</label>
-                          <input
-                            type="text"
-                            value={profileData.fullName}
-                            onChange={(e) => handleProfileChange('fullName', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black text-sm lg:text-base"
-                            placeholder="Enter your full name"
-                          />
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Full Name *
+                          </label>
+                          {isEditingProfile ? (
+                            <input
+                              type="text"
+                              value={profileData.fullName}
+                              onChange={(e) => handleProfileChange('fullName', e.target.value)}
+                              placeholder="Enter your full name"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                          ) : (
+                            <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900">
+                              {profileData.fullName || 'Not provided'}
+                            </div>
+                          )}
                         </div>
+
                         <div>
-                          <label className="block text-sm font-medium text-gray-900 mb-1">Email</label>
-                          <input
-                            type="email"
-                            value={profileData.email}
-                            onChange={(e) => handleProfileChange('email', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black text-sm lg:text-base"
-                            placeholder="Enter your email"
-                          />
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Email Address *
+                          </label>
+                          {isEditingProfile ? (
+                            <input
+                              type="email"
+                              value={profileData.email}
+                              onChange={(e) => handleProfileChange('email', e.target.value)}
+                              placeholder="Enter your email address"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                          ) : (
+                            <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900">
+                              {profileData.email || 'Not provided'}
+                            </div>
+                          )}
                         </div>
+
                         <div>
-                          <label className="block text-sm font-medium text-gray-900 mb-1">Phone Number</label>
-                          <input
-                            type="tel"
-                            value={profileData.phone}
-                            onChange={(e) => handleProfileChange('phone', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black text-sm lg:text-base"
-                            placeholder="Enter your phone number"
-                          />
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Phone Number *
+                          </label>
+                          {isEditingProfile ? (
+                            <input
+                              type="tel"
+                              value={profileData.phone}
+                              onChange={(e) => handleProfileChange('phone', e.target.value)}
+                              placeholder="Enter your phone number"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                          ) : (
+                            <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900">
+                              {profileData.phone || 'Not provided'}
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -1059,78 +1128,94 @@ const DashboardPage = () => {
                     {/* Academic Information */}
                     <div>
                       <h4 className="text-base lg:text-lg font-semibold text-gray-900 mb-3 lg:mb-4">Academic Information</h4>
-                      <div className="space-y-3 lg:space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
                         <div>
-                          <label className="block text-sm font-medium text-gray-900 mb-1">College/University</label>
-                          <input
-                            type="text"
-                            value={profileData.college}
-                            onChange={(e) => handleProfileChange('college', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black text-sm lg:text-base"
-                            placeholder="Enter your college/university"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-900 mb-1">Degree</label>
-                          <select 
-                            value={profileData.degree}
-                            onChange={(e) => handleProfileChange('degree', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black text-sm lg:text-base"
-                          >
-                            <option value="bachelor">Bachelor's Degree</option>
-                            <option value="master">Master's Degree</option>
-                            <option value="phd">PhD</option>
-                            <option value="diploma">Diploma</option>
-                            <option value="other">Other</option>
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-900 mb-1">Field of Study</label>
-                          <input
-                            type="text"
-                            value={profileData.fieldOfStudy}
-                            onChange={(e) => handleProfileChange('fieldOfStudy', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black text-sm lg:text-base"
-                            placeholder="Enter your field of study"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-900 mb-1">Year of Completion</label>
-                          <input
-                            type="number"
-                            value={profileData.yearOfCompletion}
-                            onChange={(e) => handleProfileChange('yearOfCompletion', e.target.value)}
-                            min="2000"
-                            max="2030"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-black text-sm lg:text-base"
-                            placeholder="Enter year of completion"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Account Actions */}
-                    <div>
-                      <h4 className="text-base lg:text-lg font-semibold text-gray-900 mb-3 lg:mb-4">Account Actions</h4>
-                      <div className="space-y-3">
-                        <button 
-                          onClick={handleSaveProfile}
-                          disabled={saving}
-                          className={`w-full px-4 py-2 rounded-lg transition-colors font-medium flex items-center justify-center space-x-2 text-sm lg:text-base ${
-                            saving 
-                              ? 'bg-gray-400 text-white cursor-not-allowed' 
-                              : 'bg-blue-500 text-white hover:bg-blue-600'
-                          }`}
-                        >
-                          {saving ? (
-                            <>
-                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                              <span>Saving...</span>
-                            </>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            College/University Name *
+                          </label>
+                          {isEditingProfile ? (
+                            <input
+                              type="text"
+                              value={profileData.college}
+                              onChange={(e) => handleProfileChange('college', e.target.value)}
+                              placeholder="Enter your college/university name"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
                           ) : (
-                            <span>Save Changes</span>
+                            <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900">
+                              {profileData.college || 'Not provided'}
+                            </div>
                           )}
-                        </button>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Degree *
+                          </label>
+                          {isEditingProfile ? (
+                            <select
+                              value={profileData.degree}
+                              onChange={(e) => handleProfileChange('degree', e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            >
+                              <option value="">Select Degree</option>
+                              <option value="bachelor">Bachelor's Degree</option>
+                              <option value="master">Master's Degree</option>
+                              <option value="phd">PhD</option>
+                              <option value="diploma">Diploma</option>
+                              <option value="other">Other</option>
+                            </select>
+                          ) : (
+                            <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900">
+                              {profileData.degree === 'bachelor' ? "Bachelor's Degree" : 
+                               profileData.degree === 'master' ? "Master's Degree" : 
+                               profileData.degree === 'phd' ? 'PhD' : 
+                               profileData.degree === 'diploma' ? 'Diploma' : 
+                               profileData.degree === 'other' ? 'Other' : 'Not provided'}
+                            </div>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Field of Study
+                          </label>
+                          {isEditingProfile ? (
+                            <input
+                              type="text"
+                              value={profileData.fieldOfStudy}
+                              onChange={(e) => handleProfileChange('fieldOfStudy', e.target.value)}
+                              placeholder="Enter your field of study"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                          ) : (
+                            <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900">
+                              {profileData.fieldOfStudy || 'Not provided'}
+                            </div>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Year of Completion *
+                          </label>
+                          {isEditingProfile ? (
+                            <select
+                              value={profileData.yearOfCompletion}
+                              onChange={(e) => handleProfileChange('yearOfCompletion', e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            >
+                              <option value="">Select Year</option>
+                              {Array.from({length: 25}, (_, i) => 2024 - i).map(year => (
+                                <option key={year} value={year.toString()}>{year}</option>
+                              ))}
+                            </select>
+                          ) : (
+                            <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900">
+                              {profileData.yearOfCompletion || 'Not provided'}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
