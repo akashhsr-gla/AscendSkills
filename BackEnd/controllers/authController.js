@@ -119,7 +119,7 @@ exports.register = async (req, res) => {
       });
     }
 
-    const { name, email, password, role = 'student', profile = {} } = req.body;
+    const { name, email, password, role = 'student', phone, college, degree, yearOfCompletion } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email: email.toLowerCase() });
@@ -133,13 +133,21 @@ exports.register = async (req, res) => {
     // Generate verification token
     const emailVerificationToken = crypto.randomBytes(32).toString('hex');
 
+    // Map frontend fields to backend profile structure
+    const profileData = {
+      phone: phone || '',
+      college: college || '',
+      degree: degree || '',
+      year: yearOfCompletion ? parseInt(yearOfCompletion) : undefined
+    };
+
     // Create new user
     const user = new User({
       name,
       email: email.toLowerCase(),
       password,
       role,
-      profile,
+      profile: profileData,
       status: {
         emailVerificationToken,
         isEmailVerified: false
@@ -626,15 +634,6 @@ exports.getProfile = async (req, res) => {
 // Update user profile
 exports.updateProfile = async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation failed',
-        errors: errors.array()
-      });
-    }
-
     const userId = req.user.id;
     const updateData = req.body;
 

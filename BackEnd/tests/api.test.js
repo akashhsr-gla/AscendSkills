@@ -58,12 +58,10 @@ describe('Ascend Skills API', () => {
           email: 'john@example.com',
           password: 'Password123!',
           role: 'student',
-          profile: {
-            college: 'Test University',
-            degree: 'Computer Science',
-            year: 2025,
-            branch: 'CSE'
-          }
+          phone: '+1234567890',
+          college: 'Test University',
+          degree: 'Computer Science',
+          yearOfCompletion: 2025
         };
 
         const response = await request(server)

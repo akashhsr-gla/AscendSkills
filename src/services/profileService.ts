@@ -126,6 +126,11 @@ class ProfileService {
       const result = await response.json();
 
       if (!response.ok) {
+        // Handle validation errors specifically
+        if (result.errors && Array.isArray(result.errors)) {
+          const errorMessages = result.errors.map((error: any) => error.message).join('. ');
+          return { success: false, message: errorMessages || result.message || 'Failed to update profile' };
+        }
         return { success: false, message: result.message || 'Failed to update profile' };
       }
 

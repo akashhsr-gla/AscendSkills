@@ -35,25 +35,25 @@ const authValidations = {
       .optional()
       .isIn(['student', 'admin', 'company'])
       .withMessage('Invalid role'),
-    body('profile.college')
+    body('phone')
+      .optional()
+      .isLength({ min: 1, max: 20 })
+      .withMessage('Phone number must be between 1 and 20 characters')
+      .trim(),
+    body('college')
       .optional()
       .isLength({ min: 2, max: 100 })
       .withMessage('College name must be between 2 and 100 characters')
       .trim(),
-    body('profile.degree')
+    body('degree')
       .optional()
-      .isLength({ min: 2, max: 50 })
-      .withMessage('Degree must be between 2 and 50 characters')
+      .isLength({ min: 2, max: 100 })
+      .withMessage('Degree must be between 2 and 100 characters')
       .trim(),
-    body('profile.year')
+    body('yearOfCompletion')
       .optional()
       .isInt({ min: 1980, max: 2035 })
-      .withMessage('Please select a valid year of completion'),
-    body('profile.branch')
-      .optional()
-      .isLength({ min: 2, max: 50 })
-      .withMessage('Branch must be between 2 and 50 characters')
-      .trim()
+      .withMessage('Please select a valid year of completion')
   ],
   
   login: [
