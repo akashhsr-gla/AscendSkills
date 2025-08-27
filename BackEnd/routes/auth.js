@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const authController = require('../controllers/authController');
 const { authenticate, authLimiter } = require('../middleware/auth');
-const { authValidations, handleValidationErrors, sanitizeInput } = require('../middleware/validation');
+const { authValidations, userValidations, handleValidationErrors, sanitizeInput } = require('../middleware/validation');
 const { catchAsync } = require('../middleware/errorHandler');
 const { body, param } = require('express-validator');
 
@@ -137,7 +137,7 @@ router.get('/profile',
 );
 
 router.patch('/profile',
-  // Add specific profile update validations if needed
+  userValidations.updateProfile,
   handleValidationErrors,
   catchAsync(authController.updateProfile)
 );

@@ -127,6 +127,59 @@ const userValidations = {
       .isBoolean()
       .withMessage('isActive must be a boolean')
   ],
+
+  updateProfile: [
+    body('name')
+      .optional()
+      .isLength({ min: 2, max: 50 })
+      .withMessage('Name must be between 2 and 50 characters')
+      .trim(),
+    body('profile.phone')
+      .optional()
+      .matches(/^[\+]?[\d\s\-\(\)]{10,}$/)
+      .withMessage('Please provide a valid phone number'),
+    body('profile.college')
+      .optional()
+      .isLength({ min: 2, max: 100 })
+      .withMessage('College name must be between 2 and 100 characters')
+      .trim(),
+    body('profile.degree')
+      .optional()
+      .isIn(['bachelor', 'master', 'phd', 'diploma', 'other'])
+      .withMessage('Invalid degree type'),
+    body('profile.branch')
+      .optional()
+      .isLength({ min: 2, max: 50 })
+      .withMessage('Branch must be between 2 and 50 characters')
+      .trim(),
+    body('profile.year')
+      .optional()
+      .isInt({ min: 1900, max: 2030 })
+      .withMessage('Year must be between 1900 and 2030'),
+    body('profile.cgpa')
+      .optional()
+      .isFloat({ min: 0, max: 10 })
+      .withMessage('CGPA must be between 0 and 10'),
+    body('profile.location')
+      .optional()
+      .isLength({ min: 2, max: 100 })
+      .withMessage('Location must be between 2 and 100 characters')
+      .trim(),
+    body('profile.skills')
+      .optional()
+      .isArray()
+      .withMessage('Skills must be an array'),
+    body('profile.skills.*')
+      .optional()
+      .isLength({ min: 1, max: 50 })
+      .withMessage('Each skill must be between 1 and 50 characters')
+      .trim(),
+    body('profile.bio')
+      .optional()
+      .isLength({ max: 500 })
+      .withMessage('Bio must be maximum 500 characters')
+      .trim()
+  ],
   
   getUserById: [
     commonValidations.id

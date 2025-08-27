@@ -41,11 +41,30 @@ const DashboardPage = () => {
   const [profileData, setProfileData] = useState({
     fullName: '',
     email: '',
-    phone: '+1 (555) 123-4567',
-    college: 'Stanford University',
-    degree: 'bachelor',
-    fieldOfStudy: 'Computer Science',
-    yearOfCompletion: '2024'
+    phone: '',
+    college: '',
+    degree: '',
+    fieldOfStudy: '',
+    yearOfCompletion: '',
+    cgpa: '',
+    location: '',
+    skills: '',
+    bio: ''
+  });
+
+  // Original profile data for reset functionality
+  const [originalProfileData, setOriginalProfileData] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    college: '',
+    degree: '',
+    fieldOfStudy: '',
+    yearOfCompletion: '',
+    cgpa: '',
+    location: '',
+    skills: '',
+    bio: ''
   });
 
   const userProfile = {
@@ -150,15 +169,22 @@ const DashboardPage = () => {
         const profileResponse = await profileService.getProfile();
         if (profileResponse.success && profileResponse.data) {
           const userData = profileResponse.data;
-          setProfileData({
+          const profileFormData = {
             fullName: userData.name || '',
             email: userData.email || '',
             phone: userData.profile?.phone || '',
             college: userData.profile?.college || '',
             degree: userData.profile?.degree || '',
             fieldOfStudy: userData.profile?.branch || '',
-            yearOfCompletion: userData.profile?.year?.toString() || ''
-          });
+            yearOfCompletion: userData.profile?.year?.toString() || '',
+            cgpa: userData.profile?.cgpa?.toString() || '',
+            location: userData.profile?.location || '',
+            skills: Array.isArray(userData.profile?.skills) ? userData.profile.skills.join(', ') : '',
+            bio: userData.profile?.bio || ''
+          };
+          
+          setProfileData(profileFormData);
+          setOriginalProfileData(profileFormData);
           
           // Set user subscription from profile data
           if (userData.subscription) {
@@ -195,16 +221,56 @@ const DashboardPage = () => {
 
   // Save profile changes
   const handleSaveProfile = async () => {
+    // Validation
+    const errors: string[] = [];
+    
+    if (!profileData.fullName.trim()) {
+      errors.push('Full Name is required');
+    }
+    
+    if (!profileData.email.trim()) {
+      errors.push('Email is required');
+    } else if (!/\S+@\S+\.\S+/.test(profileData.email)) {
+      errors.push('Please enter a valid email address');
+    }
+    
+    if (profileData.phone && !/^[\+]?[\d\s\-\(\)]{10,}$/.test(profileData.phone.replace(/\s/g, ''))) {
+      errors.push('Please enter a valid phone number');
+    }
+    
+    if (profileData.cgpa && (parseFloat(profileData.cgpa) < 0 || parseFloat(profileData.cgpa) > 10)) {
+      errors.push('CGPA must be between 0 and 10');
+    }
+    
+    if (profileData.yearOfCompletion && (parseInt(profileData.yearOfCompletion) < 1900 || parseInt(profileData.yearOfCompletion) > 2030)) {
+      errors.push('Please enter a valid year of completion');
+    }
+
+    if (errors.length > 0) {
+      setNotification({
+        type: 'error',
+        message: errors.join('. ')
+      });
+      setTimeout(() => {
+        setNotification({ type: null, message: '' });
+      }, 5000);
+      return;
+    }
+
     setSaving(true);
     try {
       const updateData = {
-        name: profileData.fullName,
+        name: profileData.fullName.trim(),
         profile: {
-          phone: profileData.phone,
-          college: profileData.college,
+          phone: profileData.phone.trim(),
+          college: profileData.college.trim(),
           degree: profileData.degree,
-          branch: profileData.fieldOfStudy,
-          year: parseInt(profileData.yearOfCompletion) || 2024
+          branch: profileData.fieldOfStudy.trim(),
+          year: profileData.yearOfCompletion ? parseInt(profileData.yearOfCompletion) : undefined,
+          cgpa: profileData.cgpa ? parseFloat(profileData.cgpa) : undefined,
+          location: profileData.location.trim(),
+          skills: profileData.skills ? profileData.skills.split(',').map(skill => skill.trim()).filter(skill => skill) : [],
+          bio: profileData.bio.trim()
         }
       };
 
@@ -215,6 +281,8 @@ const DashboardPage = () => {
           type: 'success',
           message: response.message || 'Profile updated successfully!'
         });
+        // Update original data with new values
+        setOriginalProfileData({ ...profileData });
         // Return to read-only mode after successful save
         setIsEditingProfile(false);
       } else {
@@ -1036,15 +1104,7 @@ const DashboardPage = () => {
                         onClick={() => {
                           setIsEditingProfile(false);
                           // Reset to original data
-                          setProfileData({
-                            fullName: user?.name || '',
-                            email: user?.email || '',
-                            phone: '+1 (555) 123-4567',
-                            college: 'Stanford University',
-                            degree: 'bachelor',
-                            fieldOfStudy: 'Computer Science',
-                            yearOfCompletion: '2024'
-                          });
+                          setProfileData({ ...originalProfileData });
                         }}
                         className="flex items-center px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                       >
@@ -1216,6 +1276,97 @@ const DashboardPage = () => {
                             <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900">
                               {profileData.yearOfCompletion || 'Not provided'}
                             </div>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            CGPA/GPA
+                          </label>
+                          {isEditingProfile ? (
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              max="10"
+                              value={profileData.cgpa}
+                              onChange={(e) => handleProfileChange('cgpa', e.target.value)}
+                              placeholder="e.g., 8.5"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                          ) : (
+                            <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900">
+                              {profileData.cgpa || 'Not provided'}
+                            </div>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Location
+                          </label>
+                          {isEditingProfile ? (
+                            <input
+                              type="text"
+                              value={profileData.location}
+                              onChange={(e) => handleProfileChange('location', e.target.value)}
+                              placeholder="Enter your location"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                          ) : (
+                            <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900">
+                              {profileData.location || 'Not provided'}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Professional Information */}
+                    <div>
+                      <h4 className="text-base lg:text-lg font-semibold text-gray-900 mb-3 lg:mb-4">Professional Information</h4>
+                      <div className="grid grid-cols-1 gap-4 lg:gap-6">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Skills
+                          </label>
+                          {isEditingProfile ? (
+                            <input
+                              type="text"
+                              value={profileData.skills}
+                              onChange={(e) => handleProfileChange('skills', e.target.value)}
+                              placeholder="e.g., JavaScript, React, Python, Node.js (comma separated)"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            />
+                          ) : (
+                            <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900">
+                              {profileData.skills || 'Not provided'}
+                            </div>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Bio
+                          </label>
+                          {isEditingProfile ? (
+                            <textarea
+                              value={profileData.bio}
+                              onChange={(e) => handleProfileChange('bio', e.target.value)}
+                              placeholder="Tell us about yourself, your interests, and career goals"
+                              maxLength={500}
+                              rows={4}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                            />
+                          ) : (
+                            <div className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-gray-900 min-h-[100px]">
+                              {profileData.bio || 'Not provided'}
+                            </div>
+                          )}
+                          {isEditingProfile && (
+                            <p className="text-xs text-gray-500 mt-1">
+                              {profileData.bio.length}/500 characters
+                            </p>
                           )}
                         </div>
                       </div>
