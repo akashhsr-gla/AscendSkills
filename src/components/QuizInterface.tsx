@@ -476,29 +476,20 @@ const QuizInterface: React.FC<QuizInterfaceProps> = ({
                 <button
                   onClick={handlePrevious}
                   disabled={currentQuestionIndex === 0}
-                  className="flex items-center px-6 py-3 text-lg font-semibold text-gray-700 bg-white border-2 border-gray-300 rounded-xl hover:bg-gray-50 disabled:opacity-50 shadow-sm"
+                  className="flex items-center px-6 py-3 text-lg font-semibold text-gray-700 bg.white border-2 border-gray-300 rounded-xl hover:bg-gray-50 disabled:opacity-50 shadow-sm"
                 >
                   <ArrowLeft className="w-5 h-5 mr-2" />
                   Previous
                 </button>
-                <div className="flex items-center space-x-4">
-                  <button 
-                    onClick={() => {
-                      saveCurrentQuestionAnswer();
-                      handleNext();
-                    }}
-                    className="px-6 py-3 text-lg font-semibold text-white bg-gray-600 rounded-xl hover:bg-gray-700 shadow-sm"
+                {currentQuestionIndex < questions.length - 1 && (
+                  <button
+                    onClick={handleNext}
+                    className="flex items-center px-6 py-3 text-lg font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 shadow-lg"
                   >
-                    Submit
+                    Next
+                    <ArrowRight className="w-5 h-5 ml-2" />
                   </button>
-                </div>
-                <button
-                  onClick={handleNext}
-                  className="flex items-center px-6 py-3 text-lg font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 shadow-lg"
-                >
-                  Next
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </button>
+                )}
               </div>
             </motion.div>
           )}
