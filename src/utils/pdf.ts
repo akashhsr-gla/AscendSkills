@@ -30,17 +30,17 @@ export async function downloadElementAsPDF(
 
     // Create a clone of the element to avoid modifying the original
     const clonedElement = element.cloneNode(true) as HTMLElement;
-
+    
     // Apply professional sky blue PDF-specific styles
     applyPDFStyles(clonedElement);
-
+    
     // Add the cloned element to the DOM temporarily
     document.body.appendChild(clonedElement);
     clonedElement.style.position = 'absolute';
     clonedElement.style.left = '-9999px';
     clonedElement.style.top = '0';
     clonedElement.style.width = '800px'; // Fixed width for consistent rendering
-
+    
     try {
       console.log('Starting html2canvas conversion...');
       // Capture the element as canvas with high quality settings
@@ -63,7 +63,7 @@ export async function downloadElementAsPDF(
           // Ignore elements that might cause issues
           return (
             element.classList.contains('pdf-ignore') ||
-            element.style.display === 'none' ||
+                 element.style.display === 'none' ||
             element.style.visibility === 'hidden'
           );
         }
@@ -92,10 +92,10 @@ export async function downloadElementAsPDF(
       // Initialize jsPDF
       const pdf = new jsPDF('p', 'mm', 'a4');
       console.log('jsPDF instance created successfully');
-
+      
       const totalPages = Math.ceil(imgHeight / pageHeight);
       let currentPage = 1;
-
+      
       // Add header to first page if (options.title)
       if (options.title) {
         console.log('Adding professional sky blue header with title:', options.title);
@@ -116,15 +116,15 @@ export async function downloadElementAsPDF(
         currentPage++;
         console.log(`Adding page ${currentPage}...`);
         pdf.addPage();
-
+        
         // Add header to subsequent pages
         if (options.title) {
           addHeaderToPage(pdf, options.title);
         }
-
+        
         pdf.addImage(canvas, 'PNG', 0, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
-
+        
         // Add footer to subsequent pages
         addFooterToPage(pdf, currentPage, totalPages);
       }
@@ -185,7 +185,7 @@ function applyPDFStyles(element: HTMLElement): void {
     }
   `;
   element.appendChild(style);
-
+  
   // Apply additional styles to specific elements
   const allElements = element.querySelectorAll('*');
   allElements.forEach((el: any) => {
@@ -193,17 +193,17 @@ function applyPDFStyles(element: HTMLElement): void {
     el.style.removeProperty('--tw-bg-opacity');
     el.style.removeProperty('--tw-text-opacity');
     el.style.removeProperty('--tw-border-opacity');
-
+    
     // Ensure text is visible and professional
     if (el.style.color && el.style.color.includes('rgba')) {
       el.style.color = '#1e293b';
     }
-
+    
     // Ensure backgrounds are solid and clean
     if (el.style.backgroundColor && el.style.backgroundColor.includes('rgba')) {
       el.style.backgroundColor = '#ffffff';
     }
-
+    
     // Add professional styling to cards
     if (el.classList.contains('bg-white') || el.classList.contains('bg-gray-50')) {
       el.style.boxShadow = '0 4px 12px rgba(14, 165, 233, 0.1)';
@@ -218,47 +218,47 @@ function addHeaderToPage(pdf: any, title: string): void {
     // Professional sky blue header background - solid color
     pdf.setFillColor(3, 105, 161); // Sky blue primary
     pdf.rect(0, 0, 210, 35, 'F');
-
+    
     // Secondary accent stripe
     pdf.setFillColor(14, 165, 233); // Lighter sky blue
     pdf.rect(0, 35, 210, 3, 'F');
-
+    
     // Add Ascend Skills branding
-    pdf.setTextColor(255, 255, 255);
+  pdf.setTextColor(255, 255, 255);
     pdf.setFontSize(18);
-    pdf.setFont('helvetica', 'bold');
+  pdf.setFont('helvetica', 'bold');
     pdf.text('ASCEND SKILLS', 20, 22);
-
+  
     // Add professional subtitle
-    pdf.setFontSize(10);
-    pdf.setFont('helvetica', 'normal');
+  pdf.setFontSize(10);
+  pdf.setFont('helvetica', 'normal');
     pdf.setTextColor(255, 255, 255);
     pdf.text('Professional Assessment Platform', 20, 30);
-
+    
     // Add main title with professional styling
     pdf.setFontSize(24);
     pdf.setFont('helvetica', 'bold');
     pdf.setTextColor(3, 105, 161); // Sky blue text
     pdf.text(title, 105, 55, { align: 'center' });
-
+    
     // Add professional decorative line under title
     pdf.setDrawColor(14, 165, 233); // Sky blue line
     pdf.setLineWidth(1);
     pdf.line(50, 58, 160, 58);
-
+    
     // Add decorative elements
     pdf.setFillColor(14, 165, 233);
     pdf.rect(48, 57, 2, 2, 'F');
     pdf.rect(160, 57, 2, 2, 'F');
-
+    
     // Reset text color and font for content
     pdf.setTextColor(30, 41, 59); // Professional dark gray for content
-    pdf.setFontSize(12);
-    pdf.setFont('helvetica', 'normal');
-
+  pdf.setFontSize(12);
+  pdf.setFont('helvetica', 'normal');
+  
     // Set Y position for content to avoid header overlap
     pdf.setY(75);
-
+    
     console.log('Professional sky blue header added successfully to PDF');
   } catch (error) {
     console.warn('Error adding header to PDF:', error);
@@ -270,28 +270,28 @@ function addHeaderToPage(pdf: any, title: string): void {
 function addFooterToPage(pdf: any, pageNumber: number, totalPages: number): void {
   try {
     const footerY = 285; // Position from top
-
+    
     // Add professional decorative line above footer
     pdf.setDrawColor(224, 242, 254); // Light sky blue line
     pdf.setLineWidth(1);
     pdf.line(15, footerY, 195, footerY);
-
+    
     // Professional page number styling
     pdf.setFillColor(248, 250, 252);
     pdf.roundedRect(85, footerY + 3, 40, 8, 2, 2, 'F');
-
+    
     // Add page numbers with sky blue styling
     pdf.setTextColor(3, 105, 161); // Sky blue
     pdf.setFontSize(10);
     pdf.setFont('helvetica', 'bold');
     pdf.text(`${pageNumber} / ${totalPages}`, 105, footerY + 8, { align: 'center' });
-
+    
     // Add professional company info
     pdf.setTextColor(100, 116, 139);
     pdf.setFontSize(8);
     pdf.text(`Generated: ${new Date().toLocaleDateString()}`, 15, footerY + 8);
     pdf.text('Confidential Report', 195, footerY + 8, { align: 'right' });
-
+    
     // Add professional contact info
     pdf.setTextColor(148, 163, 184);
     pdf.setFontSize(7);
@@ -309,22 +309,22 @@ function addSectionDivider(pdf: any, sectionTitle: string, yPosition: number): n
     // Professional section background
     pdf.setFillColor(240, 249, 255); // Light sky blue background
     pdf.rect(15, yPosition, 180, 15, 'F');
-
+    
     // Professional border
     pdf.setDrawColor(14, 165, 233);
     pdf.setLineWidth(0.5);
     pdf.rect(15, yPosition, 180, 15);
-
+    
     // Sky blue accent bar
     pdf.setFillColor(3, 105, 161);
     pdf.rect(15, yPosition, 4, 15, 'F');
-
+    
     // Add section title text
     pdf.setTextColor(3, 105, 161); // Sky blue text
     pdf.setFontSize(14);
     pdf.setFont('helvetica', 'bold');
     pdf.text(sectionTitle, 22, yPosition + 9);
-
+    
     return yPosition + 25; // Return new Y position
   } catch (error) {
     console.warn('Error adding section divider:', error);
@@ -348,7 +348,7 @@ function addScoreCard(
       borderColor = [5, 150, 105]; // Green
       fillColor = [220, 252, 231];
     } else if (score >= 70) {
-      borderColor = [14, 165, 233]; // Sky blue
+      borderColor = [14, 165, 233]; // Sky blue  
       fillColor = [240, 249, 255];
     } else if (score >= 60) {
       borderColor = [217, 119, 6]; // Orange
@@ -357,26 +357,26 @@ function addScoreCard(
       borderColor = [220, 38, 38]; // Red
       fillColor = [254, 226, 226];
     }
-
+    
     // Professional card background
     pdf.setFillColor(255, 255, 255);
     pdf.roundedRect(x, y, width, 25, 3, 3, 'F');
-
+    
     // Professional border
     pdf.setDrawColor(borderColor[0], borderColor[1], borderColor[2]);
     pdf.setLineWidth(1);
     pdf.roundedRect(x, y, width, 25, 3, 3);
-
+    
     // Top accent stripe
     pdf.setFillColor(borderColor[0], borderColor[1], borderColor[2]);
     pdf.roundedRect(x, y, width, 3, 3, 3, 'F');
-
+    
     // Add score label
     pdf.setTextColor(71, 85, 105);
     pdf.setFontSize(8);
     pdf.setFont('helvetica', 'normal');
     pdf.text(label, x + width / 2, y + 21, { align: 'center' });
-
+    
     // Add score with professional styling
     pdf.setTextColor(borderColor[0], borderColor[1], borderColor[2]);
     pdf.setFontSize(16);
@@ -398,51 +398,51 @@ function addQuestionCard(
     const cardWidth = 170;
     const cardX = 20;
     let currentY = yPosition;
-
+    
     // Professional question background
     pdf.setFillColor(240, 249, 255); // Light sky blue
     pdf.rect(cardX, currentY, cardWidth, 15, 'F');
-
+    
     // Professional question border
     pdf.setDrawColor(14, 165, 233);
     pdf.setLineWidth(0.5);
     pdf.rect(cardX, currentY, cardWidth, 15);
-
+    
     // Add question text with professional styling
     pdf.setTextColor(3, 105, 161); // Sky blue
     pdf.setFontSize(11);
     pdf.setFont('helvetica', 'bold');
-
+    
     // Split question into multiple lines if needed
     const questionLines = pdf.splitTextToSize(question, cardWidth - 10);
     pdf.text(questionLines, cardX + 5, currentY + 8);
-
+    
     currentY += Math.max(15, questionLines.length * 8) + 5;
-
+    
     // Professional response background
     pdf.setFillColor(255, 255, 255);
     pdf.rect(cardX, currentY, cardWidth, 20, 'F');
-
+    
     // Professional response border
     pdf.setDrawColor(186, 230, 253); // Light sky blue border
     pdf.setLineWidth(0.3);
     pdf.rect(cardX, currentY, cardWidth, 20);
-
+    
     // Sky blue left accent
     pdf.setFillColor(56, 189, 248);
     pdf.rect(cardX, currentY, 4, 20, 'F');
-
+    
     // Add response text
     pdf.setTextColor(30, 41, 59);
     pdf.setFontSize(10);
     pdf.setFont('helvetica', 'normal');
-
+    
     // Split response into multiple lines if needed
     const responseLines = pdf.splitTextToSize(response, cardWidth - 15);
     pdf.text(responseLines, cardX + 8, currentY + 8);
-
+    
     currentY += Math.max(20, responseLines.length * 8) + 10;
-
+    
     return currentY;
   } catch (error) {
     console.warn('Error adding question card:', error);
@@ -473,7 +473,7 @@ export function splitElementIntoPages(
   const children = Array.from(element.children);
   let currentPage = document.createElement('div');
   let currentHeight = 0;
-
+  
   children.forEach(child => {
     const childHeight = (child as HTMLElement).scrollHeight;
     if (currentHeight + childHeight > maxHeight) {
@@ -484,10 +484,10 @@ export function splitElementIntoPages(
     currentPage.appendChild(child.cloneNode(true));
     currentHeight += childHeight;
   });
-
+  
   if (currentPage.children.length > 0) {
     pages.push(currentPage);
   }
-
+  
   return pages;
 }

@@ -58,15 +58,20 @@ class AuthService {
 
       const data = await response.json();
 
-      if (data.success && data.data?.token) {
+      if (response.ok && data.success && data.data?.token) {
         this.setToken(data.data.token);
-        return data;
-      } else {
-        throw new Error(data.message || 'Login failed');
+        return data as AuthResponse;
       }
+
+      // Extract detailed validation or error messages
+      const detailedMessage = Array.isArray(data?.errors)
+        ? data.errors.map((e: any) => e.message).join('. ')
+        : (data?.message || 'Login failed');
+
+      return { success: false, message: detailedMessage } as AuthResponse;
     } catch (error) {
       console.error('Login error:', error);
-      throw error;
+      return { success: false, message: 'Network error occurred' } as AuthResponse;
     }
   }
 
@@ -82,17 +87,23 @@ class AuthService {
 
       const data = await response.json();
 
-      if (data.success && data.data?.token) {
+      if (response.ok && data.success && data.data?.token) {
         this.setToken(data.data.token);
+        return data as AuthResponse;
       }
 
-      return data;
+      // Extract detailed validation or error messages
+      const detailedMessage = Array.isArray(data?.errors)
+        ? data.errors.map((e: any) => e.message).join('. ')
+        : (data?.message || 'Signup failed');
+
+      return { success: false, message: detailedMessage } as AuthResponse;
     } catch (error) {
       console.error('Signup error:', error);
       return {
         success: false,
         message: 'Network error occurred',
-      };
+      } as AuthResponse;
     }
   }
 
