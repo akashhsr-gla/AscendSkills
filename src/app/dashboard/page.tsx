@@ -392,7 +392,7 @@ const DashboardPage = () => {
   ];
 
   // Year options to match signup page
-  const years = Array.from({ length: 15 }, (_, i) => new Date().getFullYear() + 5 - i);
+  const years = Array.from({ length: 20 }, (_, i) => new Date().getFullYear() + 5 - i);
 
   const [isEditingProfile, setIsEditingProfile] = useState(false);
 

@@ -61,7 +61,7 @@ describe('Ascend Skills API', () => {
           profile: {
             college: 'Test University',
             degree: 'Computer Science',
-            year: 3,
+            year: 2025,
             branch: 'CSE'
           }
         };

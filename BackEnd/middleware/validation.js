@@ -47,8 +47,8 @@ const authValidations = {
       .trim(),
     body('profile.year')
       .optional()
-      .isInt({ min: 1, max: 4 })
-      .withMessage('Year must be between 1 and 4'),
+      .isInt({ min: 1980, max: 2035 })
+      .withMessage('Please select a valid year of completion'),
     body('profile.branch')
       .optional()
       .isLength({ min: 2, max: 50 })

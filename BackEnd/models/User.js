@@ -13,7 +13,7 @@ const UserSchema = new mongoose.Schema({
     phone: { type: String, trim: true },
     college: { type: String, trim: true },
     degree: { type: String, trim: true },
-    year: { type: Number, min: 1, max: 4 },
+    year: { type: Number, min: 1980, max: 2035 },
     branch: { type: String, trim: true },
     cgpa: { type: Number, min: 0, max: 10 },
     skills: [{ type: String, trim: true }],

@@ -57,7 +57,7 @@ export default function SignupPage() {
     "Other"
   ];
 
-  const years = Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i);
+  const years = Array.from({ length: 20 }, (_, i) => new Date().getFullYear() + 5 - i);
 
   const validateForm = () => {
     const newErrors: {[key: string]: string} = {};
