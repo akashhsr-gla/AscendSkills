@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import DetailedInterviewModal from "./DetailedInterviewModal";
 import { downloadElementAsPDF } from "@/utils/pdf";
+import { generateInterviewReportPDF } from "@/utils/interviewPdfGenerator";
 import { interviewService, DetailedInterviewReport } from "@/services/interviewService";
 
 // Video recording interface
@@ -185,35 +186,70 @@ export default function InterviewReport({
   };
 
   const handleDownload = useCallback(async () => {
-    if (!containerRef.current) return;
-
-    const combined = document.createElement('div');
-    combined.style.width = '800px';
-    combined.className = 'bg-white';
-
-    // Clone summary section
-    const summaryClone = containerRef.current.cloneNode(true) as HTMLElement;
-    // Prune UI-only controls (buttons etc.) from clone
-    summaryClone.querySelectorAll('button').forEach((btn) => btn.remove());
-    combined.appendChild(summaryClone);
-
-    // Append detailed section if interviewId is available
-    if (interviewId) {
-      try {
-        const detailed = await interviewService.getDetailedReport(interviewId);
-        const detailedEl = buildDetailedReportElement(detailed);
-        combined.appendChild(detailedEl);
-      } catch (e) {
-        console.error('Failed to fetch detailed report for PDF:', e);
+    try {
+      console.log('🔄 Starting structured PDF generation...');
+      
+      // Fetch detailed report if available
+      let detailedReport: DetailedInterviewReport | undefined;
+      if (interviewId) {
+        try {
+          detailedReport = await interviewService.getDetailedReport(interviewId);
+          console.log('📊 Detailed report fetched successfully');
+        } catch (e) {
+          console.warn('⚠️ Failed to fetch detailed report:', e);
+        }
       }
-    }
 
-    const fileName = `AscendSkills_Interview_Report${interviewId ? `_${interviewId}` : ''}.pdf`;
-    await downloadElementAsPDF(combined, fileName, {
-      title: "Interview Assessment Report",
-      fileName,
-    });
-  }, [interviewId]);
+      // Generate structured PDF
+      const pdfBlob = await generateInterviewReportPDF(report, interviewId, detailedReport);
+      
+      // Download the PDF
+      const fileName = `AscendSkills_Interview_Report${interviewId ? `_${interviewId}` : ''}.pdf`;
+      const url = URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      console.log('✅ Structured PDF generated and downloaded successfully');
+    } catch (error) {
+      console.error('❌ PDF generation failed:', error);
+      
+      // Fallback to old method if new method fails
+      console.log('🔄 Falling back to screenshot-based PDF generation...');
+      if (!containerRef.current) return;
+
+      const combined = document.createElement('div');
+      combined.style.width = '800px';
+      combined.className = 'bg-white';
+
+      // Clone summary section
+      const summaryClone = containerRef.current.cloneNode(true) as HTMLElement;
+      // Prune UI-only controls (buttons etc.) from clone
+      summaryClone.querySelectorAll('button').forEach((btn) => btn.remove());
+      combined.appendChild(summaryClone);
+
+      // Append detailed section if interviewId is available
+      if (interviewId) {
+        try {
+          const detailed = await interviewService.getDetailedReport(interviewId);
+          const detailedEl = buildDetailedReportElement(detailed);
+          combined.appendChild(detailedEl);
+        } catch (e) {
+          console.error('Failed to fetch detailed report for PDF:', e);
+        }
+      }
+
+      const fileName = `AscendSkills_Interview_Report${interviewId ? `_${interviewId}` : ''}.pdf`;
+      await downloadElementAsPDF(combined, fileName, {
+        title: "Interview Assessment Report",
+        fileName,
+      });
+    }
+  }, [report, interviewId]);
 
   const handleVideoDownload = useCallback(() => {
     if (videoRecording?.downloadUrl) {

@@ -34,6 +34,7 @@ import {
   Download
 } from 'lucide-react';
 import { downloadElementAsPDF } from '@/utils/pdf';
+import { generateQuizResultsPDF } from '@/utils/quizPdfGenerator';
 
 interface Question {
   id: string;
@@ -71,13 +72,46 @@ const QuizResults: React.FC<QuizResultsProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
 
   const handleDownload = useCallback(async () => {
-    if (!containerRef.current) return;
-    const fileName = `AscendSkills_Quiz_Results_${quizTitle.replace(/\s+/g, '_')}.pdf`;
-    await downloadElementAsPDF(containerRef.current, fileName, {
-      title: `Quiz Results - ${quizTitle}`,
-      fileName,
-    });
-  }, [quizTitle]);
+    try {
+      console.log('🔄 Starting structured quiz PDF generation...');
+      
+      // Prepare quiz data for PDF generation
+      const quizData = {
+        questions,
+        userAnswers,
+        quizTitle,
+        totalTime,
+        flaggedQuestions
+      };
+
+      // Generate structured PDF
+      const pdfBlob = await generateQuizResultsPDF(quizData);
+      
+      // Download the PDF
+      const fileName = `AscendSkills_Quiz_Results_${quizTitle.replace(/\s+/g, '_')}.pdf`;
+      const url = URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      console.log('✅ Structured quiz PDF generated and downloaded successfully');
+    } catch (error) {
+      console.error('❌ Quiz PDF generation failed:', error);
+      
+      // Fallback to old method if new method fails
+      console.log('🔄 Falling back to screenshot-based PDF generation...');
+      if (!containerRef.current) return;
+      const fileName = `AscendSkills_Quiz_Results_${quizTitle.replace(/\s+/g, '_')}.pdf`;
+      await downloadElementAsPDF(containerRef.current, fileName, {
+        title: `Quiz Results - ${quizTitle}`,
+        fileName,
+      });
+    }
+  }, [questions, userAnswers, quizTitle, totalTime, flaggedQuestions]);
 
   // Calculate results
   const calculateResults = () => {

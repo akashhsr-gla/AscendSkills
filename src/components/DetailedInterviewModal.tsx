@@ -28,6 +28,7 @@ import {
 } from 'lucide-react';
 import { DetailedInterviewReport } from '@/services/interviewService';
 import { downloadElementAsPDF } from '@/utils/pdf';
+import { generateInterviewReportPDF } from '@/utils/interviewPdfGenerator';
 
 interface DetailedInterviewModalProps {
   isOpen: boolean;
@@ -141,17 +142,56 @@ export default function DetailedInterviewModal({
     
     setDownloading(true);
     try {
-      // Create a comprehensive report element for PDF
-      const reportElement = createComprehensiveReportElement();
-      const fileName = `AscendSkills_Detailed_Report_${interviewId}.pdf`;
+      console.log('🔄 Starting structured detailed PDF generation...');
       
-      await downloadElementAsPDF(reportElement, fileName, {
-        title: "Detailed Interview Report",
-        fileName,
-      });
+      // Create assessment report from detailed report
+      const assessmentReport = {
+        overallScore: report.finalAssessment?.overallScore || 0,
+        breakdown: report.finalAssessment?.breakdown || {
+          communication: 0,
+          technical: 0,
+          problemSolving: 0,
+          confidence: 0
+        },
+        strengths: report.finalAssessment?.strengths || [],
+        improvements: report.finalAssessment?.improvements || [],
+        recommendations: report.finalAssessment?.recommendations || [],
+        feedback: report.finalAssessment?.feedback || '',
+        metrics: report.finalAssessment?.metrics
+      };
+
+      // Generate structured PDF with detailed report
+      const pdfBlob = await generateInterviewReportPDF(assessmentReport, interviewId, report);
+      
+      // Download the PDF
+      const fileName = `AscendSkills_Detailed_Report_${interviewId}.pdf`;
+      const url = URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      console.log('✅ Structured detailed PDF generated and downloaded successfully');
     } catch (error) {
-      console.error('Download error:', error);
-      alert('Failed to download PDF. Please try again.');
+      console.error('❌ Detailed PDF generation failed:', error);
+      
+      // Fallback to old method
+      console.log('🔄 Falling back to screenshot-based PDF generation...');
+      try {
+        const reportElement = createComprehensiveReportElement();
+        const fileName = `AscendSkills_Detailed_Report_${interviewId}.pdf`;
+        
+        await downloadElementAsPDF(reportElement, fileName, {
+          title: "Detailed Interview Report",
+          fileName,
+        });
+      } catch (fallbackError) {
+        console.error('Fallback PDF generation also failed:', fallbackError);
+        alert('Failed to download PDF. Please try again.');
+      }
     } finally {
       setDownloading(false);
     }
